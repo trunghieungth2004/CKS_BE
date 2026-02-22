@@ -15,9 +15,6 @@ Firebase Cloud Functions backend built with **Layered Architecture** pattern for
 cd functions
 npm install
 
-# Initialize database with roles, statuses, and sample data
-node -e "require('./utils/initDatabase').initializeDatabase()"
-
 # Start Firebase emulators
 firebase emulators:start --only functions
 ```
