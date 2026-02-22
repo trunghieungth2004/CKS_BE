@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { db } = require('../config/firebase');
+const userRepository = require('../repositories/userRepository');
 
 const userIdSchema = Joi.string()
     .required()
@@ -14,8 +14,8 @@ const validateUserId = (id) => {
 
 const checkUserExists = async (userId) => {
     try {
-        const doc = await db.collection('users').doc(userId).get();
-        return doc.exists;
+        const user = await userRepository.findById(userId);
+        return !!user;
     } catch (error) {
         console.error("Error checking user existence:", error);
         return false;
@@ -24,20 +24,7 @@ const checkUserExists = async (userId) => {
 
 const getUserByEmail = async (email) => {
     try {
-        const snapshot = await db.collection('users')
-            .where('email', '==', email)
-            .limit(1)
-            .get();
-
-        if (snapshot.empty) {
-            return null;
-        }
-
-        const doc = snapshot.docs[0];
-        return {
-            id: doc.id,
-            ...doc.data()
-        };
+        return await userRepository.findByEmail(email);
     } catch (error) {
         console.error("Error getting user by email:", error);
         return null;
@@ -46,13 +33,13 @@ const getUserByEmail = async (email) => {
 
 const getRoleByUserId = async (userId) => {
     try {
-        const doc = await db.collection('users').doc(userId).get();
+        const user = await userRepository.findById(userId);
         
-        if (!doc.exists) {
+        if (!user) {
             return null;
         }
 
-        return doc.data().role || 'user';
+        return user.role_id || 4;
     } catch (error) {
         console.error("Error getting user role:", error);
         return null;

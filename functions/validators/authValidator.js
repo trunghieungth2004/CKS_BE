@@ -46,11 +46,32 @@ const registerSchema = Joi.object({
             'string.max': 'Username cannot exceed 30 characters'
         }),
 
-    role: Joi.string()
-        .valid('user', 'admin', 'moderator')
+    role_id: Joi.number()
+        .integer()
+        .valid(0, 1, 2, 3, 4)
         .optional()
         .messages({
-            'any.only': 'Role must be either user, admin, or moderator'
+            'any.only': 'Role ID must be 0 (admin), 1 (CK staff), 2 (CK supply), 3 (manager), or 4 (store staff)'
+        }),
+
+    store_code: Joi.string()
+        .when('role_id', {
+            is: 4,
+            then: Joi.required(),
+            otherwise: Joi.optional()
+        })
+        .messages({
+            'any.required': 'Store code is required for store staff'
+        }),
+
+    store_name: Joi.string()
+        .when('role_id', {
+            is: 4,
+            then: Joi.required(),
+            otherwise: Joi.optional()
+        })
+        .messages({
+            'any.required': 'Store name is required for store staff'
         })
 });
 

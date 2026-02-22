@@ -28,7 +28,7 @@ const getOneUser = async (req, res) => {
         const { userId } = req.body;
         
         if (!userId) {
-            return errorResponse(res, 400, "userId is required to fetch user");
+            return errorResponse(res, 400, "userId is required to fetch user", 'VAL100');
         }
 
         const { error } = validateUserId(userId);
@@ -42,7 +42,7 @@ const getOneUser = async (req, res) => {
 
         const user = await userService.getUserById(userId);
         
-        return successResponse(res, 200, "User entries retrieved successfully", user);
+        return successResponse(res, 200, "User retrieved successfully", user, 'USER100');
     } catch (error) {
         console.error("Error retrieving user entries:", error);
         return errorResponse(res, 500, "Internal server error while retrieving user entries");
@@ -54,16 +54,16 @@ const updateUser = async (req, res) => {
         const { userId, ...updateData } = req.body;
         
         if (!userId) {
-            return errorResponse(res, 400, "userId is required to update user");
+            return errorResponse(res, 400, "userId is required to update user", 'VAL100');
         }
 
         if (!await checkUserExists(userId)) {
-            return errorResponse(res, 404, "User with the provided ID does not exist");
+            return errorResponse(res, 404, "User with the provided ID does not exist", 'USER103');
         }
 
         const updatedUser = await userService.updateUser(userId, updateData);
         
-        return successResponse(res, 200, "User updated successfully", updatedUser);
+        return successResponse(res, 200, "User updated successfully", updatedUser, 'USER101');
     } catch (error) {
         console.error("Error updating user:", error);
         return errorResponse(res, 500, error.message);
@@ -75,16 +75,16 @@ const deleteUser = async (req, res) => {
         const { userId } = req.body;
         
         if (!userId) {
-            return errorResponse(res, 400, "userId is required to delete user");
+            return errorResponse(res, 400, "userId is required to delete user", 'VAL100');
         }
 
         if (!await checkUserExists(userId)) {
-            return errorResponse(res, 404, "User with the provided ID does not exist");
+            return errorResponse(res, 404, "User with the provided ID does not exist", 'USER103');
         }
 
         await userService.deleteUser(userId);
         
-        return successResponse(res, 200, "User deleted successfully");
+        return successResponse(res, 200, "User deleted successfully", null, 'USER102');
     } catch (error) {
         console.error("Error deleting user:", error);
         return errorResponse(res, 500, error.message);

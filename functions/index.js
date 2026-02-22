@@ -1,8 +1,8 @@
 const functions = require('firebase-functions');
 const express = require('express');
 const cors = require('cors');
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./documentation/swagger');
+const materialService = require('./services/materialService');
+const { onSchedule } = require('firebase-functions/scheduler');
 const app = express();
 
 app.use((req, res, next) => {
@@ -30,13 +30,56 @@ app.use(express.urlencoded({extended: true}));
 
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const productRoutes = require('./routes/productRoutes');
+const rawQCRoutes = require('./routes/rawQCRoutes');
+const rawBatchRoutes = require('./routes/rawBatchRoutes');
+const cookedBatchRoutes = require('./routes/cookedBatchRoutes');
+const cookedQCRoutes = require('./routes/cookedQCRoutes');
+const disputeRoutes = require('./routes/disputeRoutes');
 
-app.use('/api-docs/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/order', orderRoutes);
+app.use('/api/product', productRoutes);
+app.use('/api/raw-qc', rawQCRoutes);
+app.use('/api/raw-batch', rawBatchRoutes);
+app.use('/api/cooked-batch', cookedBatchRoutes);
+app.use('/api/cooked-qc', cookedQCRoutes);
+app.use('/api', disputeRoutes);
+
+app.post('/test/daily', (req, res) => {
+  console.log('Received test request with body:', req.body);
+  materialService.createMaterialSupplyOrders()
+    .then(result => {
+      console.log('Material calculation complete:', result);
+      res.status(200).json({ message: 'Daily material calculation executed successfully', result });
+    })
+    .catch(error => {
+      console.error('Error in daily material calculation:', error);
+      res.status(500).json({ message: 'Error executing daily material calculation', error: error.toString() });
+    });
+});
 
 app.get('/', (req, res) => {
   res.send("Hey there. We've been trying to reach you concerning your vehicle's extended warranty.");
 });
 
 exports.app = functions.https.onRequest(app);
+
+exports.dailyMaterialCalculation = onSchedule({
+  schedule: '0 19 * * *',
+  timeZone: 'Asia/Bangkok'
+}, async (context) => {
+  try {
+    console.log('Running daily material calculation at 7PM');
+    const result = await materialService.createMaterialSupplyOrders();
+    console.log('Material calculation complete:', result);
+    return result;
+  } catch (error) {
+    console.error('Error in daily material calculation:', error);
+    throw error;
+  }
+})
+
+

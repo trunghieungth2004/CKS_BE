@@ -7,7 +7,21 @@ const create = async (userData) => {
         const doc = await docRef.get();
         
         return {
-            id: doc.id,
+            user_id: doc.id,
+            ...doc.data()
+        };
+    } catch (error) {
+        throw new Error(`Database error: ${error.message}`);
+    }
+};
+
+const createWithId = async (userId, userData) => {
+    try {
+        await db.collection(COLLECTION).doc(userId).set(userData);
+        const doc = await db.collection(COLLECTION).doc(userId).get();
+        
+        return {
+            user_id: doc.id,
             ...doc.data()
         };
     } catch (error) {
@@ -24,7 +38,7 @@ const findById = async (userId) => {
         }
 
         return {
-            id: doc.id,
+            user_id: doc.id,
             ...doc.data()
         };
     } catch (error) {
@@ -45,7 +59,7 @@ const findByEmail = async (email) => {
 
         const doc = snapshot.docs[0];
         return {
-            id: doc.id,
+            user_id: doc.id,
             ...doc.data()
         };
     } catch (error) {
@@ -58,7 +72,7 @@ const findAll = async () => {
         const snapshot = await db.collection(COLLECTION).get();
         
         return snapshot.docs.map(doc => ({
-            id: doc.id,
+            user_id: doc.id,
             ...doc.data()
         }));
     } catch (error) {
@@ -73,7 +87,7 @@ const update = async (userId, updateData) => {
         
         const doc = await docRef.get();
         return {
-            id: doc.id,
+            user_id: doc.id,
             ...doc.data()
         };
     } catch (error) {
@@ -92,6 +106,7 @@ const deleteById = async (userId) => {
 
 module.exports = {
     create,
+    createWithId,
     findById,
     findByEmail,
     findAll,

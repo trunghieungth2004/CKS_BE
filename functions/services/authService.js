@@ -1,16 +1,14 @@
-const { auth, db, FIREBASE_API_KEY } = require('../config/firebase');
+const { auth, FIREBASE_API_KEY } = require('../config/firebase');
+const userRepository = require('../repositories/userRepository');
+const storeStaffRepository = require('../repositories/storeStaffRepository');
 const bcrypt = require('bcryptjs');
 const axios = require('axios');
 
 const register = async (userData) => {
-    const { email, password, username, role } = userData;
+    const { email, password, username, role_id, store_code, store_name } = userData;
 
-    const existingUserSnapshot = await db.collection('users')
-        .where('email', '==', email)
-        .limit(1)
-        .get();
-
-    if (!existingUserSnapshot.empty) {
+    const existingUser = await userRepository.findByEmail(email);
+    if (existingUser) {
         throw new Error('Email already registered');
     }
 
@@ -25,48 +23,44 @@ const register = async (userData) => {
     const userDoc = {
         email,
         username: username || email.split('@')[0],
-        password: hashedPassword,
-        role: role || 'user',
-        isActive: true,
-        createdAt: new Date().toISOString(),
+        password_hash: hashedPassword,
+        role_id: role_id || 4,
+        created_at: new Date().toISOString(),
     };
 
-    await db.collection('users').doc(userRecord.uid).set(userDoc);
+    await userRepository.createWithId(userRecord.uid, userDoc);
+
+    if ((role_id || 4) === 4) {
+        await storeStaffRepository.create({
+            user_id: userRecord.uid,
+            store_code: store_code || '',
+            store_name: store_name || ''
+        });
+    }
 
     const customToken = await auth.createCustomToken(userRecord.uid);
 
     return {
-        userId: userRecord.uid,
+        user_id: userRecord.uid,
         email: userDoc.email,
         username: userDoc.username,
-        role: userDoc.role,
+        role_id: userDoc.role_id,
         token: customToken,
     };
 };
 
 const login = async (email, password) => {
-    const userSnapshot = await db.collection('users')
-        .where('email', '==', email)
-        .limit(1)
-        .get();
-
-    if (userSnapshot.empty) {
+    const userData = await userRepository.findByEmail(email);
+    if (!userData) {
         throw new Error('Invalid email or password');
     }
 
-    const userDoc = userSnapshot.docs[0];
-    const userData = userDoc.data();
-
-    if (!userData.isActive) {
-        throw new Error('Account is deactivated');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, userData.password);
+    const isPasswordValid = await bcrypt.compare(password, userData.password_hash);
     if (!isPasswordValid) {
         throw new Error('Invalid email or password');
     }
 
-    const customToken = await auth.createCustomToken(userDoc.id);
+    const customToken = await auth.createCustomToken(userData.user_id);
 
     const response = await axios.post(
         `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${FIREBASE_API_KEY}`,
@@ -79,11 +73,11 @@ const login = async (email, password) => {
     const idToken = response.data.idToken;
 
     return {
-        userId: userDoc.id,
-        firebaseUid: userDoc.id,
+        user_id: userData.user_id,
+        firebaseUid: userData.user_id,
         email: userData.email,
         username: userData.username,
-        role: userData.role,
+        role_id: userData.role_id,
         token: idToken,
     };
 };
@@ -92,20 +86,17 @@ const verifyToken = async (idToken) => {
     try {
         const decodedToken = await auth.verifyIdToken(idToken);
         
-        const userDoc = await db.collection('users').doc(decodedToken.uid).get();
-
-        if (!userDoc.exists) {
+        const userData = await userRepository.findById(decodedToken.uid);
+        if (!userData) {
             throw new Error('User not found');
         }
 
-        const userData = userDoc.data();
-
         return {
-            userId: userDoc.id,
-            firebaseUid: userDoc.id,
+            user_id: userData.user_id,
+            firebaseUid: userData.user_id,
             email: userData.email,
             username: userData.username,
-            role: userData.role,
+            role_id: userData.role_id,
         };
     } catch (error) {
         throw new Error('Invalid or expired token');

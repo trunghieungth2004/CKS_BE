@@ -1,4 +1,5 @@
-const { auth, db } = require('../config/firebase');
+const { auth } = require('../config/firebase');
+const userRepository = require('../repositories/userRepository');
 const { errorResponse } = require('../utils/responseHelper');
 
 const authMiddleware = async (req, res, next) => {
@@ -6,37 +7,32 @@ const authMiddleware = async (req, res, next) => {
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return errorResponse(res, 401, "No token provided");
+            return errorResponse(res, 401, "No token provided", 'AUTH105');
         }
 
         const token = authHeader.split('Bearer ')[1];
 
         const decodedToken = await auth.verifyIdToken(token);
 
-        const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+        const userData = await userRepository.findById(decodedToken.uid);
 
-        if (!userDoc.exists) {
-            return errorResponse(res, 401, "User not found");
-        }
-
-        const userData = userDoc.data();
-
-        if (!userData.isActive) {
-            return errorResponse(res, 401, "Account is deactivated");
+        if (!userData) {
+            return errorResponse(res, 401, "User not found", 'AUTH103');
         }
 
         req.user = {
-            userId: userDoc.id,
-            firebaseUid: userDoc.id,
+            uid: userData.user_id,
+            user_id: userData.user_id,
+            firebaseUid: userData.user_id,
             email: userData.email,
             username: userData.username,
-            role: userData.role,
+            role_id: userData.role_id,
         };
 
         next();
     } catch (error) {
         console.error("Auth middleware error:", error);
-        return errorResponse(res, 401, "Invalid or expired token");
+        return errorResponse(res, 401, "Invalid or expired token", 'AUTH107');
     }
 };
 

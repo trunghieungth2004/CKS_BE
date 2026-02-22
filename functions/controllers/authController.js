@@ -13,10 +13,12 @@ const register = async (req, res) => {
 
         const result = await authService.register(value);
 
-        return successResponse(res, 201, "User registered successfully", result);
+        return successResponse(res, 201, "User registered successfully", result, 'AUTH101');
     } catch (error) {
         console.error("Error registering user:", error);
-        return errorResponse(res, 500, error.message);
+        const statusId = error.message.includes('already registered') ? 'AUTH104' : 'SYS100';
+        const statusCode = error.message.includes('already registered') ? 400 : 500;
+        return errorResponse(res, statusCode, error.message, statusId);
     }
 };
 
@@ -31,10 +33,10 @@ const login = async (req, res) => {
 
         const result = await authService.login(email, password);
 
-        return successResponse(res, 200, "Login successful", result);
+        return successResponse(res, 200, "Login successful", result, 'AUTH100');
     } catch (error) {
         console.error("Error logging in:", error);
-        return errorResponse(res, 401, error.message);
+        return errorResponse(res, 401, error.message, 'AUTH102');
     }
 };
 
@@ -51,7 +53,7 @@ const verifyToken = async (req, res) => {
         return successResponse(res, 200, "Token verified successfully", result);
     } catch (error) {
         console.error("Error verifying token:", error);
-        return errorResponse(res, 401, error.message);
+        return errorResponse(res, 401, error.message, 'AUTH107');
     }
 };
 

@@ -1,7 +1,7 @@
-const successResponse = (res, statusCode, message, data = null) => {
+const successResponse = (res, statusCode, message, data = null, statusId = null) => {
     const response = {
         statusCode,
-        status: "SUCCESS",
+        status: statusId || "SUCCESS",
         message,
     };
     
@@ -12,12 +12,14 @@ const successResponse = (res, statusCode, message, data = null) => {
     return res.status(statusCode).json(response);
 };
 
-const errorResponse = (res, statusCode, message) => {
-    return res.status(statusCode).json({
+const errorResponse = (res, statusCode, message, statusId = null) => {
+    const response = {
         statusCode,
-        status: "ERROR",
+        status: statusId || "ERROR",
         message,
-    });
+    };
+    
+    return res.status(statusCode).json(response);
 };
 
 module.exports = {
