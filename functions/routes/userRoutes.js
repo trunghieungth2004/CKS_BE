@@ -3,13 +3,14 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
+const { strictLimiter } = require('../middleware/securityMiddleware');
 
 router.post('/all', authMiddleware, roleMiddleware([0]), userController.getAllUser);
 
 router.post('/one', authMiddleware, userController.getOneUser);
 
-router.put('/', authMiddleware, userController.updateUser);
+router.put('/', authMiddleware, strictLimiter, userController.updateUser);
 
-router.delete('/users', authMiddleware, roleMiddleware([0]), userController.deleteUser);
+router.delete('/users', authMiddleware, roleMiddleware([0]), strictLimiter, userController.deleteUser);
 
 module.exports = router;

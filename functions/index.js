@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const materialService = require('./services/materialService');
 const { onSchedule } = require('firebase-functions/scheduler');
+const { generalLimiter } = require('./middleware/securityMiddleware');
 const app = express();
 
 app.use((req, res, next) => {
@@ -25,8 +26,10 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+app.use(generalLimiter);
 
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
