@@ -4,6 +4,7 @@ Firebase Cloud Functions backend built with **Layered Architecture** pattern for
 
 ## Documentation
 
+- [API Reference](functions/documentation/API.md) - Complete API endpoint documentation with request/response examples
 - [System Flow](functions/documentation/SYSTEM_FLOW.md) - Complete daily workflow from order creation to delivery
 - [Status Codes](functions/documentation/STATUS_CODES.md) - Order, authentication, and authorization status codes
 - [Dispute System](functions/documentation/DISPUTE.md) - Post-delivery dispute handling and resolution
