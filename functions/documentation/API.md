@@ -783,39 +783,6 @@ Approve or reject a dispute.
 
 ---
 
-## Testing Endpoints
-
-### Test Daily Material Calculation
-**POST** `/test/daily`  
-**Authentication:** None (Public)
-
-Manually trigger daily material calculation (normally runs at 7:00 PM).
-
-**Request:**
-```json
-{}
-```
-
-**Response:**
-```json
-{
-  "message": "Daily material calculation executed successfully",
-  "result": {
-    "ordersProcessed": 5,
-    "materialsCalculated": 3,
-    "batchesCreated": 12
-  }
-}
-```
-
-### Health Check
-**GET** `/`  
-**Authentication:** None (Public)
-
-Basic health check endpoint.
-
----
-
 ## Role Reference
 
 | Role ID | Role Name | Key Responsibilities |
