@@ -1,5 +1,10 @@
 # API Documentation
 
+## Base URL
+
+**Production:** `https://api-<hash>.us-central1.run.app`  
+**Local Development:** `http://localhost:5001/swd-cks/us-central1/app`
+
 ## Authentication
 
 Most endpoints require authentication via Firebase JWT token in the Authorization header:
@@ -9,6 +14,25 @@ Authorization: Bearer <FIREBASE_TOKEN>
 ```
 
 Obtain token by calling the `/api/auth/login` endpoint.
+
+## Rate Limiting
+
+All endpoints are protected by rate limiting for security:
+
+**Global Limit:** 100 requests per 15 minutes  
+**Login Endpoint:** 5 attempts per 15 minutes  
+**Critical Operations:** 10 requests per minute (order creation, status updates, QC, disputes, product/user modifications)
+
+Rate limit violations return HTTP 429 with error codes:
+- `SEC100` - Login rate limit exceeded
+- `SEC101` - General rate limit exceeded
+- `SEC102` - Strict rate limit exceeded
+
+See [Status Codes](STATUS_CODES.md) for complete security code reference.
+
+## Request Size Limits
+
+Maximum request payload size: **10MB**
 
 ## Response Format
 
@@ -815,15 +839,26 @@ Use these credentials for testing (password: `password123`):
 | 401 | Unauthorized - invalid/missing token |
 | 403 | Forbidden - insufficient permissions |
 | 404 | Not Found |
+| 429 | Too Many Requests - rate limit exceeded |
 | 500 | Server Error |
 
-## Error Response Example
+## Error Response Examples
 
+**Validation Error:**
 ```json
 {
   "statusCode": 400,
   "status": "ERROR",
   "message": "Validation error: email is required"
+}
+```
+
+**Rate Limit Error:**
+```json
+{
+  "statusCode": 429,
+  "status": "SEC102",
+  "message": "Rate limit exceeded. Please slow down."
 }
 ```
 
