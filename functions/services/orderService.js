@@ -269,9 +269,13 @@ const updateOrderStatus = async (orderId, newStatusId, userRole, userId) => {
         
         if (order.order_status_id === 'OR100') {
             const now = new Date();
-            const currentHour = now.getHours();
-            if (currentHour >= 18) {
-                throw new Error('Store staff can only cancel pending orders before 6 PM');
+            const deliveryDate = new Date(order.delivery_date);
+            const dayBeforeDelivery = new Date(deliveryDate);
+            dayBeforeDelivery.setDate(dayBeforeDelivery.getDate() - 1);
+            dayBeforeDelivery.setHours(18, 0, 0, 0);
+            
+            if (now >= dayBeforeDelivery) {
+                throw new Error('Store staff can only cancel pending orders before 6 PM the day before delivery date');
             }
         }
 
@@ -328,7 +332,7 @@ const getOrderById = async (orderId) => {
     };
 };
 
-const getOrdersByStoreStaff = async (userId, orderStatusId = null) => {
+const getOrdersByStoreStaff = async (userId, orderStatusId) => {
     const storeStaff = await storeStaffRepository.findByUserId(userId);
     if (!storeStaff) {
         throw new Error('Store staff record not found');

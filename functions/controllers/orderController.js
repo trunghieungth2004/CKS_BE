@@ -61,6 +61,11 @@ const getOrder = async (req, res) => {
 const getMyOrders = async (req, res) => {
     try {
         const { order_status_id } = req.body;
+
+        if (!order_status_id) {
+            return errorResponse(res, 400, "Order status ID is required", 'VAL100');
+        }
+        
         const result = await orderService.getOrdersByStoreStaff(req.user.user_id, order_status_id);
 
         return successResponse(res, 200, "Orders retrieved successfully", result);

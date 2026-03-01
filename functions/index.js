@@ -6,7 +6,7 @@ const { onSchedule } = require('firebase-functions/scheduler');
 const { generalLimiter } = require('./middleware/securityMiddleware');
 const app = express();
 
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -42,6 +42,7 @@ const rawBatchRoutes = require('./routes/rawBatchRoutes');
 const cookedBatchRoutes = require('./routes/cookedBatchRoutes');
 const cookedQCRoutes = require('./routes/cookedQCRoutes');
 const disputeRoutes = require('./routes/disputeRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
@@ -51,7 +52,8 @@ app.use('/api/raw-qc', rawQCRoutes);
 app.use('/api/raw-batch', rawBatchRoutes);
 app.use('/api/cooked-batch', cookedBatchRoutes);
 app.use('/api/cooked-qc', cookedQCRoutes);
-app.use('/api', disputeRoutes);
+app.use('/api/dispute', disputeRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 app.post('/test/daily', (req, res) => {
   console.log('Received test request with body:', req.body);

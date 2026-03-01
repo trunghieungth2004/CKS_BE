@@ -32,11 +32,11 @@ const findById = async (orderId) => {
     }
 };
 
-const findByStoreStaff = async (storeStaffId, orderStatusId = null) => {
+const findByStoreStaff = async (storeStaffId, orderStatusId) => {
     try {
         let snapshot = await db.collection(COLLECTION)
             .where('store_staff_id', '==', storeStaffId)
-            .where('order_status_id', '!=', orderStatusId)
+            .where('order_status_id', '==', orderStatusId)
             .orderBy('created_at', 'desc')
             .get();
         

@@ -12,12 +12,15 @@ const MAX_BATCH_SIZE = 5;
 
 const calculateMaterialsNeeded = async () => {
     try {
-        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowDateStr = tomorrow.toISOString().split('T')[0];
+        
         const allPendingOrders = await orderRepository.findByStatus('OR100');
         
         const pendingOrders = allPendingOrders.filter(order => {
-            const orderDate = order.created_at.split('T')[0];
-            return orderDate === today;
+            const deliveryDate = order.delivery_date.split('T')[0];
+            return deliveryDate === tomorrowDateStr;
         });
         
         if (!pendingOrders || pendingOrders.length === 0) {

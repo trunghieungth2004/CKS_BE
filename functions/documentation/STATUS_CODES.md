@@ -110,3 +110,8 @@ All API responses follow this standardized structure:
 - **SEC103** - PAYLOAD_TOO_LARGE (request body exceeds 10MB limit)
 - **SEC104** - SUSPICIOUS_ACTIVITY_DETECTED
 
+### Inventory Status Codes (INV100-INV199)
+- **INV100** - STORE_STAFF_NOT_FOUND (no store staff record found for user)
+- **INV101** - STORE_INVENTORY_RETRIEVED (store inventory retrieved successfully)
+- **INV102** - CK_INVENTORY_RETRIEVED (central kitchen inventory retrieved successfully)
+

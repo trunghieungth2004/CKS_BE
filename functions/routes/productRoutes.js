@@ -9,7 +9,7 @@ router.post('/create', authMiddleware, roleMiddleware([3]), strictLimiter, produ
 
 router.get('/all', authMiddleware, productController.getProducts);
 
-router.get('/one', authMiddleware, productController.getProductById);
+router.post('/one', authMiddleware, productController.getProductById);
 
 router.put('/one', authMiddleware, roleMiddleware([3]), strictLimiter, productController.updateProduct);
 
