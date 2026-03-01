@@ -60,7 +60,8 @@ const getOrder = async (req, res) => {
 
 const getMyOrders = async (req, res) => {
     try {
-        const result = await orderService.getOrdersByStoreStaff(req.user.user_id);
+        const { order_status_id } = req.body;
+        const result = await orderService.getOrdersByStoreStaff(req.user.user_id, order_status_id);
 
         return successResponse(res, 200, "Orders retrieved successfully", result);
     } catch (error) {

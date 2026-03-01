@@ -9,10 +9,10 @@ router.post('/create', authMiddleware, roleMiddleware([3]), strictLimiter, produ
 
 router.get('/all', authMiddleware, productController.getProducts);
 
-router.get('/:productId', authMiddleware, productController.getProductById);
+router.get('/one', authMiddleware, productController.getProductById);
 
-router.put('/:productId', authMiddleware, roleMiddleware([3]), strictLimiter, productController.updateProduct);
+router.put('/one', authMiddleware, roleMiddleware([3]), strictLimiter, productController.updateProduct);
 
-router.delete('/:productId', authMiddleware, roleMiddleware([0, 3]), strictLimiter, productController.deleteProduct);
+router.delete('/one', authMiddleware, roleMiddleware([0, 3]), strictLimiter, productController.deleteProduct);
 
 module.exports = router;

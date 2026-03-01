@@ -65,12 +65,16 @@ const getProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
     try {
-        const { productId } = req.params;
+        const { productId } = req.body;
+
+        if (!productId) {
+            return errorResponse(res, 400, 'Product ID is required', 'VAL100');
+        }
         
         const product = await productRepository.findById(productId);
         
         if (!product) {
-            return errorResponse(res, 404, 'Product not found');
+            return errorResponse(res, 404, 'Product not found', 'PROD103');
         }
 
         const recipe = await recipeRepository.findByProductId(productId);
@@ -92,7 +96,12 @@ const getProductById = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     try {
-        const { productId } = req.params;
+        const { productId } = req.body;
+
+        if (!productId) {
+            return errorResponse(res, 400, 'Product ID is required', 'VAL100');
+        }
+
         const { product_name, product_description, price, shelf_life_days } = req.body;
 
         const product = await productRepository.findById(productId);
@@ -117,7 +126,11 @@ const updateProduct = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
     try {
-        const { productId } = req.params;
+        const { productId } = req.body;
+
+        if (!productId) {
+            return errorResponse(res, 400, 'Product ID is required', 'VAL100');
+        }
 
         const product = await productRepository.findById(productId);
         

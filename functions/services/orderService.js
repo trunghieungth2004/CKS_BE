@@ -328,13 +328,13 @@ const getOrderById = async (orderId) => {
     };
 };
 
-const getOrdersByStoreStaff = async (userId) => {
+const getOrdersByStoreStaff = async (userId, orderStatusId = null) => {
     const storeStaff = await storeStaffRepository.findByUserId(userId);
     if (!storeStaff) {
         throw new Error('Store staff record not found');
     }
 
-    const orders = await orderRepository.findByStoreStaff(storeStaff.store_staff_id);
+    const orders = await orderRepository.findByStoreStaff(storeStaff.store_staff_id, orderStatusId);
 
     const ordersWithStatus = orders.map((order) => {
         const status = getOrderStatus(order.order_status_id);
