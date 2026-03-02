@@ -66,8 +66,13 @@ const createOrder = async (orderData, userId) => {
     let creditTransactions = [];
 
     if (credits_to_use && credits_to_use > 0) {
+        console.log(`Attempting to apply ${credits_to_use} credits for store_staff_id ${storeStaff.store_staff_id}`);
         const availableCredits = await storeCreditRepository.getAvailableCredits(storeStaff.store_staff_id);
-        const totalAvailable = availableCredits.reduce((sum, c) => sum + (c.remaining_amount || c.amount), 0);
+        console.log(`Available credits for store_staff_id ${storeStaff.store_staff_id}:`, availableCredits);
+        const totalAvailable = availableCredits.reduce((sum, c) => {
+            const remaining = c.remaining_amount ?? c.amount ?? 0;
+            return sum + remaining;
+        }, 0);
 
         if (credits_to_use > totalAvailable) {
             throw new Error(`Insufficient credits. Available: ${totalAvailable}, Requested: ${credits_to_use}`);
@@ -82,7 +87,7 @@ const createOrder = async (orderData, userId) => {
         for (const credit of availableCredits) {
             if (remainingToUse <= 0) break;
 
-            const creditRemaining = credit.remaining_amount || credit.amount;
+            const creditRemaining = credit.remaining_amount ?? credit.amount ?? 0;
             const amountToUseFromThisCredit = Math.min(creditRemaining, remainingToUse);
 
             await storeCreditRepository.updateCreditUsage(credit.credit_id, amountToUseFromThisCredit);
@@ -331,6 +336,13 @@ const updateOrderStatus = async (orderId, newStatusId, userRole, userId) => {
             
             if (now >= dayBeforeDelivery) {
                 throw new Error('Store staff can only cancel pending orders before 6 PM the day before delivery date');
+            }
+        }
+
+        if (order.credits_applied && order.credits_applied > 0) {
+            const creditUsages = await creditUsageRepository.findByOrderId(orderId);
+            for (const usage of creditUsages) {
+                await storeCreditRepository.refundCreditUsage(usage.credit_id, usage.amount_used);
             }
         }
 

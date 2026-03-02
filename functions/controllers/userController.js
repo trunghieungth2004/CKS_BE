@@ -2,6 +2,7 @@ const userService = require('../services/userService');
 const { validateUserId, checkUserExists } = require('../validators/userValidator');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 const storeStaffRepository = require('../repositories/storeStaffRepository');
+const storeCreditRepository = require('../repositories/storeCreditRepository');
 
 const getAllUser = async (req, res) => {
     try {
@@ -101,11 +102,15 @@ const getStoreInfo = async (req, res) => {
         if (!storeStaff) {
             return errorResponse(res, 404, 'Store staff record not found', 'USER103');
         }
+        const credits = await storeCreditRepository.findByStoreStaffId(storeStaff.store_staff_id);
+        const totalCredits = await storeCreditRepository.getTotalCredits(storeStaff.store_staff_id);
 
         return successResponse(res, 200, 'Store information retrieved successfully', {
             store_staff_id: storeStaff.store_staff_id,
             store_id: storeStaff.store_id,
-            user_id: storeStaff.user_id
+            user_id: storeStaff.user_id,
+            credits: credits,
+            totalCredits: totalCredits
         }, 'USER100');
     } catch (error) {
         return errorResponse(res, 500, error.message);

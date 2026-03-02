@@ -29,6 +29,14 @@ const createOrderSchema = Joi.object({
             'any.required': 'Items are required'
         }),
 
+    credits_to_use: Joi.number()
+        .min(0)
+        .optional()
+        .messages({
+            'number.min': 'Credits to use cannot be negative',
+            'number.base': 'Credits to use must be a number'
+        }),
+
     notes: Joi.string()
         .max(500)
         .optional()

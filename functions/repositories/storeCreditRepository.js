@@ -7,7 +7,6 @@ const create = async (creditData) => {
             ...creditData,
             used_amount: 0,
             remaining_amount: creditData.amount,
-            status: 'ACTIVE',
             created_at: new Date().toISOString()
         });
         
@@ -15,8 +14,7 @@ const create = async (creditData) => {
             credit_id: docRef.id,
             ...creditData,
             used_amount: 0,
-            remaining_amount: creditData.amount,
-            status: 'ACTIVE'
+            remaining_amount: creditData.amount
         };
     } catch (error) {
         throw new Error(`Database error: ${error.message}`);
@@ -25,6 +23,7 @@ const create = async (creditData) => {
 
 const findByStoreStaffId = async (storeStaffId) => {
     try {
+        console.log(`Finding credits for store_staff_id: ${storeStaffId}`);
         const snapshot = await db.collection(COLLECTION)
             .where('store_staff_id', '==', storeStaffId)
             .orderBy('created_at', 'desc')
@@ -42,7 +41,10 @@ const findByStoreStaffId = async (storeStaffId) => {
 const getTotalCredits = async (storeStaffId) => {
     try {
         const credits = await findByStoreStaffId(storeStaffId);
-        return credits.reduce((sum, credit) => sum + (credit.remaining_amount || credit.amount), 0);
+        return credits.reduce((sum, credit) => {
+            const remaining = credit.remaining_amount ?? credit.amount ?? 0;
+            return sum + remaining;
+        }, 0);
     } catch (error) {
         throw new Error(`Database error: ${error.message}`);
     }
@@ -52,7 +54,6 @@ const getAvailableCredits = async (storeStaffId) => {
     try {
         const snapshot = await db.collection(COLLECTION)
             .where('store_staff_id', '==', storeStaffId)
-            .where('status', '==', 'ACTIVE')
             .orderBy('created_at', 'asc')
             .get();
         
@@ -61,7 +62,10 @@ const getAvailableCredits = async (storeStaffId) => {
                 credit_id: doc.id,
                 ...doc.data()
             }))
-            .filter(credit => (credit.remaining_amount || credit.amount) > 0);
+            .filter(credit => {
+                const remaining = credit.remaining_amount ?? credit.amount ?? 0;
+                return remaining > 0;
+            });
     } catch (error) {
         throw new Error(`Database error: ${error.message}`);
     }
@@ -75,14 +79,45 @@ const updateCreditUsage = async (creditId, amountUsed) => {
         }
         
         const credit = doc.data();
-        const currentRemaining = credit.remaining_amount || credit.amount;
+        const currentRemaining = credit.remaining_amount ?? credit.amount;
         const newRemaining = currentRemaining - amountUsed;
-        const newUsed = (credit.used_amount || 0) + amountUsed;
+        const newUsed = (credit.used_amount ?? 0) + amountUsed;
         
         const updateData = {
             used_amount: newUsed,
             remaining_amount: newRemaining,
-            status: newRemaining <= 0 ? 'FULLY_USED' : 'ACTIVE',
+            updated_at: new Date().toISOString()
+        };
+        
+        await db.collection(COLLECTION).doc(creditId).update(updateData);
+        
+        return {
+            credit_id: creditId,
+            ...credit,
+            ...updateData
+        };
+    } catch (error) {
+        throw new Error(`Database error: ${error.message}`);
+    }
+};
+
+const refundCreditUsage = async (creditId, amountToRefund) => {
+    try {
+        const doc = await db.collection(COLLECTION).doc(creditId).get();
+        if (!doc.exists) {
+            throw new Error('Credit not found');
+        }
+        
+        const credit = doc.data();
+        const currentRemaining = credit.remaining_amount ?? 0;
+        const currentUsed = credit.used_amount ?? 0;
+        
+        const newRemaining = currentRemaining + amountToRefund;
+        const newUsed = Math.max(0, currentUsed - amountToRefund);
+        
+        const updateData = {
+            used_amount: newUsed,
+            remaining_amount: newRemaining,
             updated_at: new Date().toISOString()
         };
         
@@ -119,6 +154,7 @@ module.exports = {
     getTotalCredits,
     getAvailableCredits,
     updateCreditUsage,
+    refundCreditUsage,
     findAll
 };
 
