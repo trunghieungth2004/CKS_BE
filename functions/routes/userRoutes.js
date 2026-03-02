@@ -13,4 +13,6 @@ router.put('/', authMiddleware, strictLimiter, userController.updateUser);
 
 router.delete('/users', authMiddleware, roleMiddleware([0]), strictLimiter, userController.deleteUser);
 
+router.post('/store-info', authMiddleware, roleMiddleware([4]), userController.getStoreInfo);
+
 module.exports = router;

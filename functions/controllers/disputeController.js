@@ -1,4 +1,6 @@
 const disputeService = require('../services/disputeService');
+const orderRepository = require('../repositories/orderRepository');
+const disputeRepository = require('../repositories/disputeRepository');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 const { DISPUTE_TYPES, isValidDisputeType } = require('../constants/disputeTypes');
 
@@ -9,6 +11,11 @@ const fileDispute = async (req, res) => {
 
         if (!order_id) {
             return errorResponse(res, 400, 'order_id is required');
+        }
+
+        const orderExists = await orderRepository.findById(order_id);
+        if (!orderExists) {
+            return errorResponse(res, 404, 'Order not found', 'DB101');
         }
 
         if (!items || !Array.isArray(items) || items.length === 0) {
@@ -48,6 +55,11 @@ const getDisputesByOrder = async (req, res) => {
             return errorResponse(res, 400, 'order_id is required');
         }
 
+        const orderExists = await orderRepository.findById(order_id);
+        if (!orderExists) {
+            return errorResponse(res, 404, 'Order not found', 'DB101');
+        }
+
         const disputes = await disputeService.getDisputesByOrder(order_id, userId, userRole);
 
         return successResponse(res, 200, 'Disputes retrieved successfully', disputes);
@@ -84,6 +96,11 @@ const resolveDispute = async (req, res) => {
 
         if (!dispute_id) {
             return errorResponse(res, 400, 'dispute_id is required');
+        }
+
+        const disputeExists = await disputeRepository.findById(dispute_id);
+        if (!disputeExists) {
+            return errorResponse(res, 404, 'Dispute not found', 'DB101');
         }
 
         if (!resolution_type) {

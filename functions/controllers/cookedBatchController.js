@@ -1,4 +1,5 @@
 const cookedBatchRepository = require('../repositories/cookedBatchRepository');
+const orderRepository = require('../repositories/orderRepository');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getAllCookedBatches = async (req, res) => {
@@ -44,6 +45,11 @@ const getCookedBatchesByOrder = async (req, res) => {
         
         if (!order_id) {
             return errorResponse(res, 400, 'order_id is required', 'VAL100');
+        }
+        
+        const orderExists = await orderRepository.findById(order_id);
+        if (!orderExists) {
+            return errorResponse(res, 404, 'Order not found', 'DB101');
         }
         
         const batches = await cookedBatchRepository.findByOrderId(order_id);

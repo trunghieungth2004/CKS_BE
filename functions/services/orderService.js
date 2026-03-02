@@ -8,6 +8,9 @@ const ckInventoryRepository = require('../repositories/ckInventoryRepository');
 const batchConsumptionRepository = require('../repositories/batchConsumptionRepository');
 const storeInventoryRepository = require('../repositories/storeInventoryRepository');
 const cookedBatchRepository = require('../repositories/cookedBatchRepository');
+const orderDispute = require('../repositories/disputeRepository');
+const storeCreditRepository = require('../repositories/storeCreditRepository');
+const creditUsageRepository = require('../repositories/creditUsageRepository');
 const { getOrderStatus, isValidTransition, isTerminalStatus } = require('../constants/statuses');
 
 const CUTOFF_HOUR = 18;
@@ -19,7 +22,7 @@ const checkCutoffTime = () => {
 };
 
 const createOrder = async (orderData, userId) => {
-    const { store_staff_id, delivery_date, items, notes } = orderData;
+    const { store_staff_id, delivery_date, items, notes, credits_to_use } = orderData;
 
     const storeStaff = await storeStaffRepository.findByUserId(userId);
     if (!storeStaff) {
@@ -38,11 +41,13 @@ const createOrder = async (orderData, userId) => {
         throw new Error('Order must contain at least one item');
     }
 
+    let subtotal = 0;
     for (const item of items) {
         const product = await productRepository.findById(item.product_id);
         if (!product) {
             throw new Error(`Product with ID '${item.product_id}' not found`);
         }
+        subtotal += product.price * item.quantity;
     }
 
     const deliveryDateObj = new Date(delivery_date);
@@ -57,17 +62,66 @@ const createOrder = async (orderData, userId) => {
         throw new Error('Order submission past cut-off time (6 PM). Order automatically cancelled.');
     }
 
+    let creditsApplied = 0;
+    let creditTransactions = [];
+
+    if (credits_to_use && credits_to_use > 0) {
+        const availableCredits = await storeCreditRepository.getAvailableCredits(storeStaff.store_staff_id);
+        const totalAvailable = availableCredits.reduce((sum, c) => sum + (c.remaining_amount || c.amount), 0);
+
+        if (credits_to_use > totalAvailable) {
+            throw new Error(`Insufficient credits. Available: ${totalAvailable}, Requested: ${credits_to_use}`);
+        }
+
+        if (credits_to_use > subtotal) {
+            throw new Error(`Credits to use (${credits_to_use}) cannot exceed order subtotal (${subtotal})`);
+        }
+
+        let remainingToUse = credits_to_use;
+
+        for (const credit of availableCredits) {
+            if (remainingToUse <= 0) break;
+
+            const creditRemaining = credit.remaining_amount || credit.amount;
+            const amountToUseFromThisCredit = Math.min(creditRemaining, remainingToUse);
+
+            await storeCreditRepository.updateCreditUsage(credit.credit_id, amountToUseFromThisCredit);
+
+            creditTransactions.push({
+                credit_id: credit.credit_id,
+                amount_used: amountToUseFromThisCredit
+            });
+
+            creditsApplied += amountToUseFromThisCredit;
+            remainingToUse -= amountToUseFromThisCredit;
+        }
+    }
+
+    const totalAfterCredits = subtotal - creditsApplied;
+
     const order = {
         store_staff_id: storeStaff.store_staff_id,
         order_status_id: initialStatusId,
         delivery_date: deliveryDateObj.toISOString(),
         items: items,
+        subtotal: subtotal,
+        credits_applied: creditsApplied,
+        total_after_credits: totalAfterCredits,
         notes: notes || '',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
     };
 
     const createdOrder = await orderRepository.create(order);
+
+    for (const transaction of creditTransactions) {
+        await creditUsageRepository.create({
+            credit_id: transaction.credit_id,
+            order_id: createdOrder.order_id,
+            amount_used: transaction.amount_used,
+            used_by: userId
+        });
+    }
 
     await orderHistoryRepository.create({
         order_id: createdOrder.order_id,
@@ -82,7 +136,8 @@ const createOrder = async (orderData, userId) => {
 
     return {
         ...createdOrder,
-        status_name: status?.status_name || 'PENDING'
+        status_name: status?.status_name || 'PENDING',
+        credit_transactions: creditTransactions
     };
 };
 
@@ -325,10 +380,14 @@ const getOrderById = async (orderId) => {
         };
     });
 
+    const dispute = await orderDispute.findByOrderId(orderId);
+    const disputeDetails = dispute.length > 0 ? dispute[0] : null;
+
     return {
         ...order,
         status_name: status?.status_name || 'UNKNOWN',
-        history: historyWithDetails
+        history: historyWithDetails,
+        dispute: disputeDetails
     };
 };
 

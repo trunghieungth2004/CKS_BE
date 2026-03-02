@@ -1,4 +1,5 @@
 const rawQCService = require('../services/rawQCService');
+const rawBatchRepository = require('../repositories/rawBatchRepository');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getPendingQC = async (req, res) => {
@@ -16,6 +17,11 @@ const performQC = async (req, res) => {
 
         if (!batch_id) {
             return errorResponse(res, 400, 'batch_id is required', 'VAL100');
+        }
+
+        const batchExists = await rawBatchRepository.findById(batch_id);
+        if (!batchExists) {
+            return errorResponse(res, 404, 'Batch not found', 'QC103');
         }
 
         if (!['PASS', 'FAIL'].includes(qc_result)) {

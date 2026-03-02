@@ -1,6 +1,7 @@
 const userService = require('../services/userService');
 const { validateUserId, checkUserExists } = require('../validators/userValidator');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
+const storeStaffRepository = require('../repositories/storeStaffRepository');
 
 const getAllUser = async (req, res) => {
     try {
@@ -91,9 +92,30 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const getStoreInfo = async (req, res) => {
+    try {
+        const userId = req.user.uid;
+
+        const storeStaff = await storeStaffRepository.findByUserId(userId);
+        
+        if (!storeStaff) {
+            return errorResponse(res, 404, 'Store staff record not found', 'USER103');
+        }
+
+        return successResponse(res, 200, 'Store information retrieved successfully', {
+            store_staff_id: storeStaff.store_staff_id,
+            store_id: storeStaff.store_id,
+            user_id: storeStaff.user_id
+        }, 'USER100');
+    } catch (error) {
+        return errorResponse(res, 500, error.message);
+    }
+};
+
 module.exports = {
     getAllUser,
     getOneUser,
     updateUser,
     deleteUser,
+    getStoreInfo,
 };

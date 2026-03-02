@@ -1,5 +1,7 @@
 const rawBatchRepository = require('../repositories/rawBatchRepository');
 const batchConsumptionRepository = require('../repositories/batchConsumptionRepository');
+const supplierRepository = require('../repositories/supplierRepository');
+const orderRepository = require('../repositories/orderRepository');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getAllBatches = async (req, res) => {
@@ -56,6 +58,13 @@ const getBatchConsumption = async (req, res) => {
     try {
         const { order_id, material_id, start_date, end_date } = req.body;
         
+        if (order_id) {
+            const orderExists = await orderRepository.findById(order_id);
+            if (!orderExists) {
+                return errorResponse(res, 404, 'Order not found', 'DB101');
+            }
+        }
+        
         let consumption;
         
         if (order_id) {
@@ -80,6 +89,11 @@ const getBatchesBySupplier = async (req, res) => {
         
         if (!supplier_id) {
             return errorResponse(res, 400, 'supplier_id is required', 'VAL100');
+        }
+        
+        const supplierExists = await supplierRepository.findById(supplier_id);
+        if (!supplierExists) {
+            return errorResponse(res, 404, 'Supplier not found', 'DB101');
         }
         
         const batches = await rawBatchRepository.findBySupplierId(supplier_id);
