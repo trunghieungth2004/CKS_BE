@@ -13,6 +13,6 @@ router.post('/one', authMiddleware, productController.getProductById);
 
 router.put('/one', authMiddleware, roleMiddleware([3]), strictLimiter, productController.updateProduct);
 
-router.delete('/one', authMiddleware, roleMiddleware([0, 3]), strictLimiter, productController.deleteProduct);
+router.delete('/one', authMiddleware, roleMiddleware([3]), strictLimiter, productController.deleteProduct);
 
 module.exports = router;

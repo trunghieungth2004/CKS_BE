@@ -9,9 +9,9 @@ router.post('/pending', authMiddleware, roleMiddleware([2]), cookedQCController.
 
 router.post('/perform', authMiddleware, roleMiddleware([2]), strictLimiter, cookedQCController.performProductQC);
 
-router.post('/credits', authMiddleware, roleMiddleware([0, 3, 4]), cookedQCController.getStoreCredits);
+router.post('/credits', authMiddleware, roleMiddleware([3, 4]), cookedQCController.getStoreCredits);
 
-router.post('/risk-pool', authMiddleware, roleMiddleware([0, 2, 3]), cookedQCController.getRiskPoolTransfers);
+router.post('/risk-pool', authMiddleware, roleMiddleware([2, 3]), cookedQCController.getRiskPoolTransfers);
 
 router.post('/risk-pool/search', authMiddleware, roleMiddleware([2]), cookedQCController.searchRiskPoolStores);
 
