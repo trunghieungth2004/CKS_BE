@@ -422,9 +422,13 @@ const getOrdersByStoreStaff = async (userId, orderStatusId) => {
     return ordersWithStatus;
 };
 
-const getAllOrders = async () => {
-    const orders = await orderRepository.findAll();
-
+const getAllOrders = async (order_status_id) => {
+    let orders = null;
+    if (order_status_id == null) {
+        orders = await orderRepository.findAll();
+    } else {
+        orders = await orderRepository.findByStatus(order_status_id);
+    }
     const ordersWithStatus = orders.map((order) => {
         const status = getOrderStatus(order.order_status_id);
         return {

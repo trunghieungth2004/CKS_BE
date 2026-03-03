@@ -67,8 +67,10 @@ const findByDate = async (date) => {
 
 const findPendingQC = async () => {
     try {
+        const today = new Date().toISOString().split('T')[0];
         const snapshot = await db.collection(COLLECTION)
             .where('qc_status', '==', 'PENDING')
+            .where('batch_date', '==', today)
             .get();
         
         return snapshot.docs.map(doc => ({
@@ -106,10 +108,11 @@ const findAll = async () => {
     }
 };
 
-const findByQCStatus = async (qcStatus) => {
+const findByQCStatusAndDate = async (qcStatus, batch_date) => {
     try {
         const snapshot = await db.collection(COLLECTION)
             .where('qc_status', '==', qcStatus)
+            .where('batch_date', '==', batch_date)
             .get();
         
         return snapshot.docs.map(doc => ({
@@ -159,7 +162,7 @@ module.exports = {
     findPendingQC,
     update,
     findAll,
-    findByQCStatus,
+    findByQCStatusAndDate,
     findBySupplierId,
     findReplacementBatches
 };

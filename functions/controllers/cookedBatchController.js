@@ -4,14 +4,13 @@ const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getAllCookedBatches = async (req, res) => {
     try {
-        const snapshot = await cookedBatchRepository.collection
-            .orderBy('created_at', 'desc')
-            .get();
-        
-        const batches = snapshot.docs.map(doc => ({
-            batch_id: doc.id,
-            ...doc.data()
-        }));
+        const { qc_status, cook_date } = req.body;
+        let batches = null;
+        if (qc_status && cook_date) {
+            batches = await cookedBatchRepository.findByQCStatusAndDate(qc_status, cook_date);
+        } else {
+            batches = await cookedBatchRepository.findAll();
+        }
         
         return successResponse(res, 200, 'Cooked batches retrieved successfully', batches);
     } catch (error) {

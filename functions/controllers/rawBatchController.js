@@ -7,17 +7,12 @@ const { successResponse, errorResponse } = require('../utils/responseHelper');
 const getAllBatches = async (req, res) => {
     try {
         const { qc_status, batch_date } = req.body;
-        
-        let batches;
-        
-        if (qc_status) {
-            batches = await rawBatchRepository.findByQCStatus(qc_status);
-        } else if (batch_date) {
-            batches = await rawBatchRepository.findByDate(batch_date);
+        let batches = null;
+        if (qc_status && batch_date) {
+            batches = await rawBatchRepository.findByQCStatusAndDate(qc_status, batch_date);
         } else {
             batches = await rawBatchRepository.findAll();
         }
-        
         return successResponse(res, 200, 'Batches retrieved successfully', batches);
     } catch (error) {
         return errorResponse(res, 500, error.message, 'SYS100');

@@ -77,7 +77,8 @@ const getMyOrders = async (req, res) => {
 
 const getAllOrders = async (req, res) => {
     try {
-        const result = await orderService.getAllOrders();
+        const { order_status_id } = req.body;
+        const result = await orderService.getAllOrders(order_status_id);
 
         return successResponse(res, 200, "All orders retrieved successfully", result);
     } catch (error) {

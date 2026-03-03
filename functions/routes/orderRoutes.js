@@ -13,6 +13,6 @@ router.post('/one', authMiddleware, orderController.getOrder);
 
 router.post('/my-orders', authMiddleware, roleMiddleware([4]), orderController.getMyOrders);
 
-router.post('/all', authMiddleware, roleMiddleware([1, 2]), orderController.getAllOrders);
+router.post('/all', authMiddleware, roleMiddleware([1, 2, 3]), orderController.getAllOrders);
 
 module.exports = router;
