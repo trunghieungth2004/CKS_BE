@@ -32,20 +32,24 @@ const performQC = async (batchId, qcResult, userId, notes = '') => {
 
             await ckInventoryRepository.updateQuantity(batch.material_id, batch.quantity);
 
-            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowDateStr = tomorrow.toISOString().split('T')[0];
+            
             const allPendingOrders = await orderRepository.findByStatus('OR100');
-            const todayOrders = allPendingOrders.filter(order => {
-                const orderDate = order.created_at.split('T')[0];
-                return orderDate === today;
+            const tomorrowOrders = allPendingOrders.filter(order => {
+                const deliveryDate = order.delivery_date.split('T')[0];
+                return deliveryDate === tomorrowDateStr;
             });
 
+            const today = new Date().toISOString().split('T')[0];
             const allBatches = await rawBatchRepository.findByDate(today);
             const hasPendingBatches = allBatches.some(b => b.qc_status === 'PENDING');
             const allBatchesComplete = !hasPendingBatches;
 
             let ordersUpdated = 0;
             if (allBatchesComplete) {
-                for (const order of todayOrders) {
+                for (const order of tomorrowOrders) {
                     await orderRepository.update(order.order_id, {
                         order_status_id: 'OR101'
                     });
@@ -56,7 +60,7 @@ const performQC = async (batchId, qcResult, userId, notes = '') => {
                         to_status_id: 'OR101',
                         changed_by_user_id: userId,
                         changed_by_role_id: 1,
-                        notes: `All production batches passed QC - materials available for production`
+                        notes: `All raw material batches passed QC - materials available for production`
                     });
                     
                     ordersUpdated++;
@@ -66,7 +70,7 @@ const performQC = async (batchId, qcResult, userId, notes = '') => {
             return {
                 success: true,
                 message: allBatchesComplete 
-                    ? `QC passed - Material added to CK inventory. All batches approved! ${ordersUpdated} orders updated to OR101 (CONFIRMED)`
+                    ? `QC passed - Material added to CK inventory. All batches approved! ${ordersUpdated} orders for tomorrow's delivery updated to OR101 (IN_PRODUCTION)`
                     : `QC passed - Material added to CK inventory. Waiting for other batches to complete QC.`,
                 batch_id: batchId,
                 batch_number: batch.batch_number,
