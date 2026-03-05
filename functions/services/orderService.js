@@ -212,67 +212,89 @@ const updateOrderStatus = async (orderId, newStatusId, userRole, userId) => {
 
         const MAX_COOKED_BATCH_SIZE = 5;
         let totalWeight = 0;
-        const itemsWithWeight = [];
+        const itemsByProduct = {};
 
         for (const item of order.items) {
             const product = await productRepository.findById(item.product_id);
             const itemWeight = (product.weight_per_unit || 0.5) * item.quantity;
             totalWeight += itemWeight;
-            itemsWithWeight.push({
-                product_id: item.product_id,
-                product_name: product.product_name,
-                quantity: item.quantity,
-                weight_per_unit: product.weight_per_unit || 0.5,
-                total_weight: itemWeight
-            });
+            
+            if (!itemsByProduct[item.product_id]) {
+                itemsByProduct[item.product_id] = {
+                    product_id: item.product_id,
+                    product_name: product.product_name,
+                    quantity: 0,
+                    weight_per_unit: product.weight_per_unit || 0.5,
+                    total_weight: 0
+                };
+            }
+            
+            itemsByProduct[item.product_id].quantity += item.quantity;
+            itemsByProduct[item.product_id].total_weight += itemWeight;
         }
 
-        const numBatches = Math.ceil(totalWeight / MAX_COOKED_BATCH_SIZE);
-        let currentBatchWeight = 0;
-        let currentBatchItems = [];
+        const productItems = Object.values(itemsByProduct);
         let batchNumber = 1;
+        const totalBatches = productItems.reduce((sum, item) => {
+            return sum + Math.ceil(item.total_weight / MAX_COOKED_BATCH_SIZE);
+        }, 0);
 
-        for (const item of itemsWithWeight) {
-            if (currentBatchWeight + item.total_weight > MAX_COOKED_BATCH_SIZE && currentBatchItems.length > 0) {
+        for (const productItem of productItems) {
+            const productBatches = Math.ceil(productItem.total_weight / MAX_COOKED_BATCH_SIZE);
+            
+            if (productBatches === 1) {
                 await cookedBatchRepository.create({
                     order_id: orderId,
                     store_id: order.store_staff_id,
                     batch_number: batchNumber,
-                    total_batches: numBatches,
-                    items: currentBatchItems,
-                    total_weight: currentBatchWeight,
+                    total_batches: totalBatches,
+                    items: [{
+                        product_id: productItem.product_id,
+                        product_name: productItem.product_name,
+                        quantity: productItem.quantity,
+                        weight_per_unit: productItem.weight_per_unit,
+                        total_weight: productItem.total_weight
+                    }],
+                    total_weight: productItem.total_weight,
                     qc_status: 'PENDING',
+                    replaced: false,
+                    source: '',
                     cooked_by: userId,
                     cooked_at: new Date().toISOString()
                 });
-                
                 batchNumber++;
-                currentBatchItems = [];
-                currentBatchWeight = 0;
+            } else {
+                const quantityPerBatch = Math.ceil(productItem.quantity / productBatches);
+                let remainingQuantity = productItem.quantity;
+                
+                for (let i = 0; i < productBatches; i++) {
+                    const batchQuantity = Math.min(quantityPerBatch, remainingQuantity);
+                    const batchWeight = batchQuantity * productItem.weight_per_unit;
+                    
+                    await cookedBatchRepository.create({
+                        order_id: orderId,
+                        store_id: order.store_staff_id,
+                        batch_number: batchNumber,
+                        total_batches: totalBatches,
+                        items: [{
+                            product_id: productItem.product_id,
+                            product_name: productItem.product_name,
+                            quantity: batchQuantity,
+                            weight_per_unit: productItem.weight_per_unit,
+                            total_weight: batchWeight
+                        }],
+                        total_weight: batchWeight,
+                        qc_status: 'PENDING',
+                        replaced: false,
+                        source: '',
+                        cooked_by: userId,
+                        cooked_at: new Date().toISOString()
+                    });
+                    
+                    batchNumber++;
+                    remainingQuantity -= batchQuantity;
+                }
             }
-
-            currentBatchItems.push({
-                product_id: item.product_id,
-                product_name: item.product_name,
-                quantity: item.quantity,
-                weight_per_unit: item.weight_per_unit,
-                total_weight: item.total_weight
-            });
-            currentBatchWeight += item.total_weight;
-        }
-
-        if (currentBatchItems.length > 0) {
-            await cookedBatchRepository.create({
-                order_id: orderId,
-                store_id: order.store_staff_id,
-                batch_number: batchNumber,
-                total_batches: numBatches,
-                items: currentBatchItems,
-                total_weight: currentBatchWeight,
-                qc_status: 'PENDING',
-                cooked_by: userId,
-                cooked_at: new Date().toISOString()
-            });
         }
     } else if (userRole === 2 && order.order_status_id === 'OR102' && newStatusId === 'OR103') {
         const allBatches = await cookedBatchRepository.findByOrderId(orderId);
@@ -284,6 +306,11 @@ const updateOrderStatus = async (orderId, newStatusId, userRole, userId) => {
         const pendingBatches = allBatches.filter(b => b.qc_status === 'PENDING');
         if (pendingBatches.length > 0) {
             throw new Error(`Cannot dispatch: ${pendingBatches.length} batch(es) still pending QC`);
+        }
+
+        const failedBatches = allBatches.filter(b => b.qc_status === 'FAIL');
+        if (failedBatches.length > 0) {
+            console.log(`[NOTIFICATION ROUTE] Order ${orderId}: ${failedBatches.length} failed batch(es) found - Store will be notified of partial fulfillment`);
         }
 
     } else if (userRole === 4 && order.order_status_id === 'OR103' && newStatusId === 'OR104') {

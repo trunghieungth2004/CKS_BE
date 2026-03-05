@@ -1,6 +1,7 @@
 const storeInventoryRepository = require('../repositories/storeInventoryRepository');
 const ckInventoryRepository = require('../repositories/ckInventoryRepository');
 const storeStaffRepository = require('../repositories/storeStaffRepository');
+const riskPoolRepository = require('../repositories/riskPoolTransferRepository');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getStoreInventory = async (req, res) => {
@@ -37,7 +38,29 @@ const getCKInventory = async (req, res) => {
     }
 };
 
+const getStoreRiskPoolInventory = async (req, res) => {
+    try {
+        const userId = req.user.uid;
+
+        const storeStaff = await storeStaffRepository.findByUserId(userId);
+        
+        if (!storeStaff) {
+            return errorResponse(res, 404, 'Store staff record not found', 'INV100');
+        }
+
+        const riskPoolTransfers = await riskPoolRepository.findByStoreStaffId(storeStaff.store_staff_id);
+
+        return successResponse(res, 200, 'Store risk pool inventory retrieved successfully', {
+            store_staff_id: storeStaff.store_staff_id,
+            riskPoolTransfers
+        }, 'INV103');
+    } catch (error) {
+        return errorResponse(res, 500, error.message, 'SYS100');
+    }
+};
+
 module.exports = {
     getStoreInventory,
-    getCKInventory
+    getCKInventory,
+    getStoreRiskPoolInventory
 };

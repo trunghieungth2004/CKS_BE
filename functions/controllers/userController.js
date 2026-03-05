@@ -53,7 +53,7 @@ const getOneUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-        const { userId, ...updateData } = req.body;
+        const { userId, username } = req.body;
         
         if (!userId) {
             return errorResponse(res, 400, "userId is required to update user", 'VAL100');
@@ -63,7 +63,7 @@ const updateUser = async (req, res) => {
             return errorResponse(res, 404, "User with the provided ID does not exist", 'USER103');
         }
 
-        const updatedUser = await userService.updateUser(userId, updateData);
+        const updatedUser = await userService.updateUser(userId, { username });
         
         return successResponse(res, 200, "User updated successfully", updatedUser, 'USER101');
     } catch (error) {

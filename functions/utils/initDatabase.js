@@ -122,6 +122,63 @@ const initializeSampleData = async () => {
     }
 };
 
+const initializeSecondStore = async () => {
+    try {
+        console.log('\n=== Initializing Second Store for Risk Pool Testing ===\n');
+        
+        const password = "CKS@12345";
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const storeStaff2AuthUser = await auth.createUser({
+            uid: 'store_staff_002',
+            email: 'storestaff@store2.com',
+            password: password,
+            displayName: 'Store Staff 2'
+        });
+        const storeStaff2User = await userRepository.createWithId(storeStaff2AuthUser.uid, {
+            email: 'storestaff@store2.com',
+            username: 'Store Staff 2',
+            password_hash: hashedPassword,
+            role_id: 4,
+            created_at: new Date().toISOString()
+        });
+        console.log('✓ Created store staff user: storestaff@store2.com');
+
+        const storeStaff2 = await storeStaffRepository.create({
+            user_id: storeStaff2AuthUser.uid,
+            store_code: 'STORE002',
+            store_name: 'Secondary Branch Store'
+        });
+        console.log('✓ Created store staff record: Secondary Branch Store');
+
+        const products = await productRepository.findAll();
+        const tenYearsFromNow = new Date();
+        tenYearsFromNow.setFullYear(tenYearsFromNow.getFullYear() + 10);
+
+        for (const product of products) {
+            await storeInventoryRepository.create({
+                store_staff_id: storeStaff2.store_staff_id,
+                product_id: product.product_id,
+                product_name: product.product_name,
+                quantity: 100,
+                expiration_date: tenYearsFromNow.toISOString(),
+                last_updated: new Date().toISOString()
+            });
+        }
+        console.log('✓ Created store inventory for Secondary Branch Store with 100 units each product (10-year expiration)');
+
+        console.log('\n=== Second Store Initialized Successfully ===\n');
+        
+        return {
+            storeStaff2User,
+            storeStaff2
+        };
+    } catch (error) {
+        console.error('Error initializing second store:', error);
+        throw error;
+    }
+};
+
 const initializeUsers = async (materials) => {
     try {
         console.log('\n=== Initializing Sample Users ===\n');
@@ -167,13 +224,13 @@ const initializeUsers = async (materials) => {
         for (const material of materials) {
             await ckInventoryRepository.create({
                 material_id: material.material_id,
-                quantity: 0,
+                quantity: 50,
                 unit: material.unit,
                 status: 'RAW',
                 last_updated: new Date().toISOString()
             });
         }
-        console.log('✓ Created CK inventory for all materials');
+        console.log('✓ Created CK inventory with initial stock for all materials');
 
         const ckSupplyAuthUser = await auth.createUser({
             uid: 'ck_supply_001',
@@ -227,27 +284,21 @@ const initializeUsers = async (materials) => {
         });
         console.log('✓ Created store staff record: Main Branch Store');
 
-        for (const material of materials) {
-            await storeInventoryRepository.create({
-                store_staff_id: storeStaff.store_staff_id,
-                material_id: material.material_id,
-                material_name: material.material_name,
-                quantity: 0,
-                unit: material.unit,
-                last_updated: new Date().toISOString()
-            });
-        }
-        console.log('✓ Created store inventory for Main Branch Store');
+        const { storeStaff2User } = await initializeSecondStore();
 
         console.log('\n=== Sample Users Initialized Successfully ===');
         console.log('All users created with password:', password);
+        console.log('\nStores created:');
+        console.log('  - STORE001: Main Branch Store (empty inventory)');
+        console.log('  - STORE002: Secondary Branch Store (100 units per product, 10-year expiration)');
         
         return {
             adminUser,
             ckStaffUser,
             ckSupplyUser,
             managerUser,
-            storeStaffUser
+            storeStaffUser,
+            storeStaff2User
         };
     } catch (error) {
         console.error('Error initializing sample users:', error);
@@ -281,4 +332,4 @@ const initializeDatabase = async () => {
     }
 };
 
-module.exports = { initializeDatabase, initializeSampleData, initializeUsers };
+module.exports = { initializeDatabase, initializeSampleData, initializeUsers, initializeSecondStore };

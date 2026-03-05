@@ -98,11 +98,13 @@ const findAll = async () => {
     }
 };
 
-const findAvailableByProduct = async (productId, minQuantity = 1) => {
+const findAvailableByProduct = async (productId, minQuantity = 1, store_staff_id) => {
     try {
         const snapshot = await db.collection(COLLECTION)
             .where('product_id', '==', productId)
             .where('quantity', '>=', minQuantity)
+            .where('store_staff_id', '!=', store_staff_id)
+            .where('expiration_date', '>', new Date().toISOString())
             .get();
         
         const now = new Date();

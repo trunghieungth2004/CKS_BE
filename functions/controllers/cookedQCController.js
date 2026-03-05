@@ -17,7 +17,7 @@ const getPendingProductQC = async (req, res) => {
 
 const performProductQC = async (req, res) => {
     try {
-        const { batch_id, qc_result, failed_items, notes } = req.body;
+        const { batch_id, qc_result, notes } = req.body;
 
         if (!batch_id) {
             return errorResponse(res, 400, 'batch_id is required', 'VAL100');
@@ -32,15 +32,10 @@ const performProductQC = async (req, res) => {
             return errorResponse(res, 400, 'qc_result must be PASS or FAIL', 'VAL103');
         }
 
-        if (qc_result === 'FAIL' && (!failed_items || failed_items.length === 0)) {
-            return errorResponse(res, 400, 'failed_items is required when qc_result is FAIL', 'VAL100');
-        }
-
         const result = await cookedQCService.performProductQC(
             batch_id,
             qc_result,
             req.user.uid,
-            failed_items,
             notes
         );
 
@@ -111,27 +106,9 @@ const getRiskPoolTransfers = async (req, res) => {
 
 const searchRiskPoolStores = async (req, res) => {
     try {
-        const { product_id, quantity } = req.body;
+        const { batch_id, exclude_store_staff_id } = req.body;
 
-        if (!product_id) {
-            return errorResponse(res, 400, 'product_id is required', 'VAL100');
-        }
-
-        if (!quantity || quantity <= 0) {
-            return errorResponse(res, 400, 'Valid quantity is required', 'VAL100');
-        }
-
-        const stores = await cookedQCService.searchRiskPoolStores(product_id, quantity);
-
-        return successResponse(res, 200, 'Available stores retrieved successfully', stores);
-    } catch (error) {
-        return errorResponse(res, 500, error.message, 'SYS100');
-    }
-};
-
-const transferFromRiskPool = async (req, res) => {
-    try {
-        const { batch_id, product_id, quantity, from_store_staff_id, notes } = req.body;
+        console.log('Searching risk pool stores with batch_id:', batch_id, 'and exclude_store_staff_id:', exclude_store_staff_id);
 
         if (!batch_id) {
             return errorResponse(res, 400, 'batch_id is required', 'VAL100');
@@ -142,12 +119,25 @@ const transferFromRiskPool = async (req, res) => {
             return errorResponse(res, 404, 'Batch not found', 'QC103');
         }
 
-        if (!product_id) {
-            return errorResponse(res, 400, 'product_id is required', 'VAL100');
+        const stores = await cookedQCService.searchRiskPoolStores(batch_id, exclude_store_staff_id);
+
+        return successResponse(res, 200, 'Available stores retrieved successfully', stores);
+    } catch (error) {
+        return errorResponse(res, 500, error.message, 'SYS100');
+    }
+};
+
+const transferFromRiskPool = async (req, res) => {
+    try {
+        const { batch_id, from_store_staff_id, notes } = req.body;
+
+        if (!batch_id) {
+            return errorResponse(res, 400, 'batch_id is required', 'VAL100');
         }
 
-        if (!quantity || quantity <= 0) {
-            return errorResponse(res, 400, 'Valid quantity is required', 'VAL100');
+        const batchExists = await cookedBatchRepository.findById(batch_id);
+        if (!batchExists) {
+            return errorResponse(res, 404, 'Batch not found', 'QC103');
         }
 
         if (!from_store_staff_id) {
@@ -161,8 +151,6 @@ const transferFromRiskPool = async (req, res) => {
 
         const result = await cookedQCService.transferFromRiskPool(
             batch_id,
-            product_id,
-            quantity,
             from_store_staff_id,
             req.user.uid,
             notes

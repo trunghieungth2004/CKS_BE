@@ -4,7 +4,8 @@ const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const register = async (req, res) => {
     try {
-        const userData = req.body;
+        const { email, password, username, role_id, store_code, store_name } = req.body;
+        const userData = { email, password, username, role_id, store_code, store_name };
 
         const { error, value } = validateRegister(userData);
         if (error) {

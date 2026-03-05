@@ -8,4 +8,6 @@ router.post('/store', authMiddleware, roleMiddleware([4]), inventoryController.g
 
 router.post('/ck', authMiddleware, roleMiddleware([1, 3]), inventoryController.getCKInventory);
 
+router.post('/store/risk-pool', authMiddleware, roleMiddleware([4]), inventoryController.getStoreRiskPoolInventory);
+
 module.exports = router;

@@ -1,869 +1,180 @@
-# API Documentation
+# API Endpoints
 
-## Base URL
+## Test Accounts
 
-**Production:** `https://api-<hash>.us-central1.run.app`  
-**Local Development:** `http://localhost:5001/swd-cks/us-central1/app`
+All test accounts use password: **CKS@12345**
 
-## Authentication
-
-Most endpoints require authentication via Firebase JWT token in the Authorization header:
-
-```
-Authorization: Bearer <FIREBASE_TOKEN>
-```
-
-Obtain token by calling the `/api/auth/login` endpoint.
-
-## Rate Limiting
-
-All endpoints are protected by rate limiting for security:
-
-**Global Limit:** 100 requests per 15 minutes  
-**Login Endpoint:** 5 attempts per 15 minutes  
-**Critical Operations:** 10 requests per minute (order creation, status updates, QC, disputes, product/user modifications)
-
-Rate limit violations return HTTP 429 with error codes:
-- `SEC100` - Login rate limit exceeded
-- `SEC101` - General rate limit exceeded
-- `SEC102` - Strict rate limit exceeded
-
-See [Status Codes](STATUS_CODES.md) for complete security code reference.
-
-## Request Size Limits
-
-Maximum request payload size: **10MB**
-
-## Response Format
-
-All responses follow this structure:
-
-```json
-{
-  "statusCode": 200,
-  "status": "SUCCESS",
-  "message": "Operation description",
-  "data": { }
-}
-```
-
-See [Status Codes](STATUS_CODES.md) for complete status code reference.
+| Email | Role ID | Role Name | Store Code | Description |
+|-------|---------|-----------|------------|-------------|
+| admin@cks.com | 0 | Admin | - | Administrator account |
+| ckstaff@cks.com | 1 | CK Staff | - | Central Kitchen staff |
+| cksupply@cks.com | 2 | CK Supply | - | Supply chain manager |
+| manager@cks.com | 3 | Manager | - | General manager |
+| storestaff@store1.com | 4 | Store Staff | STORE001 | Main Branch Store (empty inventory) |
+| storestaff@store2.com | 4 | Store Staff | STORE002 | Secondary Branch Store (100 units/product, risk pool) |
 
 ---
 
-## Authentication Endpoints
+## Auth Routes
 
-### Login
-**POST** `/api/auth/login`  
-**Authentication:** None (Public)
+### POST /auth/register
+**Body:** `email`, `password`, `username`, `role_id`, `store_code`, `store_name`
 
-Login and receive JWT token.
+### POST /auth/login
+**Body:** `email`, `password`
 
-**Request:**
-```json
-{
-  "email": "admin@cks.com",
-  "password": "password123"
-}
-```
-
-**Response:**
-```json
-{
-  "statusCode": 200,
-  "status": "AUTH100",
-  "message": "Login successful",
-  "data": {
-    "user_id": "user123",
-    "email": "admin@cks.com",
-    "role_id": 0,
-    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
-
-### Register User
-**POST** `/api/auth/register`  
-**Authentication:** Required  
-**Roles:** Admin (0)
-
-Create new user account.
-
-**Request:**
-```json
-{
-  "email": "newuser@cks.com",
-  "password": "password123",
-  "username": "New User",
-  "role_id": 4,
-  "store_code": "STORE001",
-  "store_name": "Downtown Branch"
-}
-```
-
-### Verify Token
-**POST** `/api/auth/verify`  
-**Authentication:** None (Public)
-
-Verify JWT token validity.
-
-**Request:**
-```json
-{
-  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
+### POST /auth/verify
+**Body:** `token`
 
 ---
 
-## User Management Endpoints
+## Order Routes
 
-### Get All Users
-**POST** `/api/user/all`  
-**Authentication:** Required  
-**Roles:** Admin (0)
+### POST /orders/create
+**Body:** `delivery_date`, `items` (array of `{product_id, quantity}`), `store_staff_id` (optional), `credits_to_use` (optional), `notes` (optional)
 
-Retrieve all users in the system.
+### POST /orders/update-status
+**Body:** `order_id`, `order_status_id`
 
-**Request:**
-```json
-{}
-```
+### POST /orders/one
+**Body:** `order_id`
 
-### Get One User
-**POST** `/api/user/one`  
-**Authentication:** Required  
-**Roles:** All
+### POST /orders/my-orders
+**Body:** (none)
 
-Get details of a specific user.
-
-**Request:**
-```json
-{
-  "user_id": "user123"
-}
-```
-
-### Update User
-**PUT** `/api/user`  
-**Authentication:** Required  
-**Roles:** All
-
-Update user information.
-
-**Request:**
-```json
-{
-  "user_id": "user123",
-  "username": "Updated Name",
-  "email": "updated@cks.com"
-}
-```
-
-### Delete User
-**DELETE** `/api/user/users`  
-**Authentication:** Required  
-**Roles:** Admin (0)
-
-Delete a user from the system.
-
-**Request:**
-```json
-{
-  "user_id": "user123"
-}
-```
+### POST /orders/all
+**Body:** `order_status_id` (optional)
 
 ---
 
-## Order Management Endpoints
+## User Routes
 
-### Create Order
-**POST** `/api/order/create`  
-**Authentication:** Required  
-**Roles:** Store Staff (4)
+### POST /users/all
+**Body:** `userId` (optional)
 
-Create new order. Must be submitted before 6:00 PM daily cutoff.
+### POST /users/one
+**Body:** `userId`
 
-**Request:**
-```json
-{
-  "delivery_date": "2026-02-25",
-  "items": [
-    {
-      "product_id": "PROD_KATSU_001",
-      "quantity": 10
-    },
-    {
-      "product_id": "PROD_BEEF_002",
-      "quantity": 5
-    }
-  ],
-  "notes": "Urgent delivery needed"
-}
-```
+### PUT /users
+**Body:** `userId`, `username`
 
-**Response:**
-```json
-{
-  "statusCode": 201,
-  "status": "OR100",
-  "message": "Order created successfully",
-  "data": {
-    "order_id": "ORD20260223001",
-    "order_status_id": "OR100",
-    "status_name": "PENDING",
-    "delivery_date": "2026-02-25T00:00:00.000Z",
-    "items": [...]
-  }
-}
-```
+### DELETE /users/users
+**Body:** `userId`
 
-### Get My Orders
-**POST** `/api/order/my-orders`  
-**Authentication:** Required  
-**Roles:** Store Staff (4)
-
-Retrieve all orders for the authenticated store staff.
-
-**Request:**
-```json
-{}
-```
-
-### Get One Order
-**POST** `/api/order/one`  
-**Authentication:** Required  
-**Roles:** All
-
-Get detailed information about a specific order including history.
-
-**Request:**
-```json
-{
-  "order_id": "ORD20260223001"
-}
-```
-
-### Get All Orders
-**POST** `/api/order/all`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Staff (1), CK Supply (2)
-
-Retrieve all orders in the system.
-
-**Request:**
-```json
-{}
-```
-
-### Update Order Status
-**POST** `/api/order/update-status`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Staff (1), CK Supply (2), Store Staff (4)
-
-Update order status. See [System Flow](SYSTEM_FLOW.md) for status transitions.
-
-**Request - OR101 → OR102 (CK Staff):**
-```json
-{
-  "order_id": "ORD20260223001",
-  "new_status_id": "OR102",
-  "notes": "Cooking completed, ready for staging"
-}
-```
-
-**Request - OR102 → OR103 (CK Supply):**
-```json
-{
-  "order_id": "ORD20260223001",
-  "new_status_id": "OR103",
-  "notes": "Dispatched to store"
-}
-```
-
-**Request - OR103 → OR104 (Store Staff):**
-```json
-{
-  "order_id": "ORD20260223001",
-  "new_status_id": "OR104",
-  "notes": "Delivery confirmed"
-}
-```
-
-**Request - Cancel Order:**
-```json
-{
-  "order_id": "ORD20260223001",
-  "new_status_id": "OR105",
-  "notes": "Cancelled due to store closure"
-}
-```
+### POST /users/store-info
+**Body:** (none)
 
 ---
 
-## Product Management Endpoints
+## Product Routes
 
-### Create Product
-**POST** `/api/product/create`  
-**Authentication:** Required  
-**Roles:** Manager (3)
+### POST /products/create
+**Body:** `product_name`, `product_description`, `price`, `weight_per_unit`, `shelf_life_days`, `recipe`, `ingredients`
 
-Create new product with recipe and ingredients.
+### GET /products/all
+**Body:** (none)
 
-**Request:**
-```json
-{
-  "product_name": "Chicken Katsu",
-  "description": "Crispy breaded chicken cutlet",
-  "unit_price": 250,
-  "shelf_life_days": 3,
-  "recipe": {
-    "instructions": "1. Bread chicken\n2. Deep fry until golden\n3. Slice and serve",
-    "ingredients": [
-      {
-        "material_id": "MAT_CHICKEN_001",
-        "quantity_per_unit": 0.15
-      },
-      {
-        "material_id": "MAT_BREADCRUMBS_002",
-        "quantity_per_unit": 0.05
-      }
-    ]
-  }
-}
-```
+### POST /products/one
+**Body:** `productId`
 
-### Get All Products
-**GET** `/api/product/all`  
-**Authentication:** Required  
-**Roles:** All
+### PUT /products/one
+**Body:** `productId`, `product_name`, `product_description`, `price`, `shelf_life_days`
 
-Retrieve all products in the catalog.
-
-### Get Product by ID
-**GET** `/api/product/:productId`  
-**Authentication:** Required  
-**Roles:** All
-
-Get detailed product information including recipe and ingredients.
-
-**Example:** `GET /api/product/PROD_KATSU_001`
-
-### Update Product
-**PUT** `/api/product/:productId`  
-**Authentication:** Required  
-**Roles:** Manager (3)
-
-Update product details.
-
-**Request:**
-```json
-{
-  "product_name": "Premium Chicken Katsu",
-  "unit_price": 280,
-  "description": "Premium grade chicken cutlet",
-  "shelf_life_days": 4
-}
-```
-
-### Delete Product
-**DELETE** `/api/product/:productId`  
-**Authentication:** Required  
-**Roles:** Admin (0), Manager (3)
-
-Remove product from catalog.
-
-**Example:** `DELETE /api/product/PROD_KATSU_001`
+### DELETE /products/one
+**Body:** `productId`
 
 ---
 
-## Raw Material QC Endpoints
+## Cooked QC Routes
 
-### Get Pending Raw Material Batches
-**GET** `/api/raw-qc/pending`  
-**Authentication:** Required  
-**Roles:** CK Staff (1)
+### POST /qc/pending
+**Body:** (none)
 
-Retrieve all raw material batches awaiting quality control.
+### POST /qc/perform
+**Body:** `batch_id`, `qc_result`, `notes` (optional)
 
-**Response:**
-```json
-{
-  "statusCode": 200,
-  "status": "SUCCESS",
-  "message": "Pending batches retrieved",
-  "data": [
-    {
-      "batch_id": "BATCH001",
-      "material_name": "Raw Chicken",
-      "quantity": 5,
-      "supplier_name": "Fresh Farms Co.",
-      "qc_status": "PENDING"
-    }
-  ]
-}
-```
+### POST /qc/credits
+**Body:** `store_staff_id`
 
-### Perform Raw Material QC
-**POST** `/api/raw-qc/perform`  
-**Authentication:** Required  
-**Roles:** CK Staff (1)
+### POST /qc/risk-pool
+**Body:** `order_id` (optional), `store_staff_id` (optional)
 
-Conduct quality control check on raw material batch.
+### POST /qc/risk-pool/search
+**Body:** `batch_id`, `exclude_store_staff_id` (optional)
 
-**Request - PASS:**
-```json
-{
-  "batch_id": "BATCH001",
-  "qc_status": "PASS",
-  "qc_notes": "Quality check passed. Material meets standards."
-}
-```
-
-**Request - FAIL:**
-```json
-{
-  "batch_id": "BATCH002",
-  "qc_status": "FAIL",
-  "qc_notes": "Material shows signs of spoilage. Rejecting batch.",
-  "waste_reason": "SPOILAGE"
-}
-```
-
-**Result:**
-- **PASS:** Batch added to CK inventory, orders may progress to OR101
-- **FAIL:** Batch logged as waste, replacement batch auto-created from different supplier
+### POST /qc/risk-pool/transfer
+**Body:** `batch_id`, `from_store_staff_id`, `notes` (optional)
 
 ---
 
-## Raw Batch Management Endpoints
+## Cooked Batch Routes
 
-### Get All Raw Batches
-**POST** `/api/raw-batch/all`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Staff (1), Manager (3)
+### POST /cookedBatch/all
+**Body:** `qc_status` (optional), `cook_date` (optional)
 
-Retrieve all raw material batches.
+### POST /cookedBatch/one
+**Body:** `batch_id`
 
-**Request:**
-```json
-{}
-```
+### POST /cookedBatch/by-order
+**Body:** `order_id`
 
-### Get One Raw Batch
-**POST** `/api/raw-batch/one`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Staff (1), Manager (3)
-
-Get detailed information about a specific batch.
-
-**Request:**
-```json
-{
-  "batch_id": "BATCH001"
-}
-```
-
-### Get Batch Consumption
-**POST** `/api/raw-batch/consumption`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Staff (1), Manager (3)
-
-View consumption records for a batch.
-
-**Request:**
-```json
-{
-  "batch_id": "BATCH001"
-}
-```
-
-### Get Batches by Supplier
-**POST** `/api/raw-batch/supplier`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Staff (1), Manager (3)
-
-Retrieve all batches from a specific supplier.
-
-**Request:**
-```json
-{
-  "supplier_id": "SUP001"
-}
-```
+### POST /cookedBatch/by-store
+**Body:** `store_id`
 
 ---
 
-## Cooked Batch Management Endpoints
+## Raw Batch Routes
 
-### Get All Cooked Batches
-**POST** `/api/cooked-batch/all`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Supply (2), Manager (3)
+### POST /rawBatch/all
+**Body:** `qc_status` (optional), `batch_date` (optional)
 
-Retrieve all cooked product batches.
+### POST /rawBatch/one
+**Body:** `batch_id`
 
-**Request:**
-```json
-{}
-```
+### POST /rawBatch/consumption
+**Body:** `order_id` (optional), `material_id` (optional), `start_date` (optional), `end_date` (optional)
 
-### Get One Cooked Batch
-**POST** `/api/cooked-batch/one`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Supply (2), Manager (3)
-
-Get details of a specific cooked batch.
-
-**Request:**
-```json
-{
-  "batch_id": "COOKED_BATCH001"
-}
-```
-
-### Get Cooked Batches by Order
-**POST** `/api/cooked-batch/by-order`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Supply (2), Manager (3)
-
-View all cooked batches associated with an order.
-
-**Request:**
-```json
-{
-  "order_id": "ORD20260223001"
-}
-```
-
-### Get Cooked Batches by Store
-**POST** `/api/cooked-batch/by-store`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Supply (2), Manager (3)
-
-View cooked batches for a specific store.
-
-**Request:**
-```json
-{
-  "store_staff_id": "SS_001"
-}
-```
+### POST /rawBatch/supplier
+**Body:** `supplier_id`
 
 ---
 
-## Cooked Product QC & Risk Pool Endpoints
+## Raw QC Routes
 
-### Get Pending Cooked Product Batches
-**POST** `/api/cooked-qc/pending`  
-**Authentication:** Required  
-**Roles:** CK Supply (2)
+### GET /rawQC/pending
+**Body:** (none)
 
-Retrieve cooked batches awaiting quality control.
-
-**Request:**
-```json
-{}
-```
-
-### Perform Cooked Product QC
-**POST** `/api/cooked-qc/perform`  
-**Authentication:** Required  
-**Roles:** CK Supply (2)
-
-Conduct quality control on cooked product batch.
-
-**Request - PASS:**
-```json
-{
-  "batch_id": "COOKED_BATCH001",
-  "qc_status": "PASS",
-  "qc_notes": "Meets quality standards"
-}
-```
-
-**Request - FAIL (to Risk Pool):**
-```json
-{
-  "batch_id": "COOKED_BATCH002",
-  "qc_status": "FAIL",
-  "qc_notes": "Slight quality issue - send to risk pool",
-  "failure_reason": "MINOR_DEFECT"
-}
-```
-
-**Result:**
-- **PASS:** Batch ready for dispatch
-- **FAIL:** Batch sent to risk pool, store receives credits
-
-### Get Store Credits
-**POST** `/api/cooked-qc/credits`  
-**Authentication:** Required  
-**Roles:** Admin (0), Manager (3), Store Staff (4)
-
-View credit balance for a store.
-
-**Request:**
-```json
-{
-  "store_staff_id": "SS_001"
-}
-```
-
-### Get Risk Pool Transfers
-**POST** `/api/cooked-qc/risk-pool`  
-**Authentication:** Required  
-**Roles:** Admin (0), CK Supply (2), Manager (3)
-
-View all risk pool transfer records.
-
-**Request:**
-```json
-{}
-```
-
-### Search Risk Pool Stores
-**POST** `/api/cooked-qc/risk-pool/search`  
-**Authentication:** Required  
-**Roles:** CK Supply (2)
-
-Find stores with sufficient credits for risk pool transfer.
-
-**Request:**
-```json
-{
-  "product_id": "PROD_KATSU_001",
-  "quantity": 5
-}
-```
-
-**Response:**
-```json
-{
-  "statusCode": 200,
-  "status": "SUCCESS",
-  "message": "Matching stores found",
-  "data": [
-    {
-      "store_staff_id": "SS_002",
-      "store_name": "North Branch",
-      "available_credits": 5000
-    }
-  ]
-}
-```
-
-### Transfer from Risk Pool
-**POST** `/api/cooked-qc/risk-pool/transfer`  
-**Authentication:** Required  
-**Roles:** CK Supply (2)
-
-Execute risk pool transfer from one store to another.
-
-**Request:**
-```json
-{
-  "from_store_staff_id": "SS_002",
-  "to_store_staff_id": "SS_001",
-  "product_id": "PROD_KATSU_001",
-  "quantity": 3,
-  "reason": "Risk pool transfer - quality issue compensation"
-}
-```
-
-**Result:**
-- Credits deducted from source store
-- Product transferred to destination store
-- Transfer record created
+### POST /rawQC/perform
+**Body:** `batch_id`, `qc_result`, `notes` (optional)
 
 ---
 
-## Dispute Endpoints
+## Inventory Routes
 
-See [Dispute System](DISPUTE.md) for complete documentation.
+### POST /inventory/store
+**Body:** (none)
 
-### File Dispute
-**POST** `/api/dispute`  
-**Authentication:** Required  
-**Roles:** Store Staff (4)
+### POST /inventory/ck
+**Body:** (none)
 
-File dispute for delivered order. Must be within 1 hour of delivery confirmation.
-
-**Request - Single Item:**
-```json
-{
-  "order_id": "ORD20260223001",
-  "items": [
-    {
-      "product_id": "PROD_KATSU_001",
-      "disputed_quantity": 3,
-      "issue_type": "MISSING"
-    }
-  ],
-  "reason": "3kg Chicken Katsu was missing from the delivery package"
-}
-```
-
-**Request - Multiple Items:**
-```json
-{
-  "order_id": "ORD20260223002",
-  "items": [
-    {
-      "product_id": "PROD_KATSU_001",
-      "disputed_quantity": 2,
-      "issue_type": "SPOILED"
-    },
-    {
-      "product_id": "PROD_BEEF_002",
-      "disputed_quantity": 1.5,
-      "issue_type": "DAMAGED"
-    }
-  ],
-  "reason": "Multiple issues found during delivery inspection"
-}
-```
-
-**Valid Issue Types:**
-- `MISSING` - Item not included in delivery
-- `SPOILED` - Item arrived spoiled or contaminated
-- `DAMAGED` - Item arrived damaged
-- `WRONG_ITEM` - Incorrect item delivered
-- `QUANTITY_MISMATCH` - Delivered quantity differs from ordered
-
-### Get My Disputes
-**POST** `/api/disputes/my-disputes`  
-**Authentication:** Required  
-**Roles:** Store Staff (4)
-
-Retrieve all disputes filed by the authenticated store staff.
-
-**Request:**
-```json
-{}
-```
-
-### Get Disputes by Order
-**POST** `/api/disputes/order`  
-**Authentication:** Required  
-**Roles:** Admin (0), Manager (3), Store Staff (4)
-
-View all disputes for a specific order.
-
-**Request:**
-```json
-{
-  "order_id": "ORD20260223001"
-}
-```
-
-### Get All Disputes
-**POST** `/api/disputes/all`  
-**Authentication:** Required  
-**Roles:** Admin (0), Manager (3)
-
-Retrieve all disputes in the system.
-
-**Request:**
-```json
-{}
-```
-
-### Resolve Dispute
-**POST** `/api/dispute/resolve`  
-**Authentication:** Required  
-**Roles:** Admin (0), Manager (3)
-
-Approve or reject a dispute.
-
-**Request - APPROVED:**
-```json
-{
-  "dispute_id": "DISP_001",
-  "resolution_type": "APPROVED",
-  "resolution_notes": "Confirmed with delivery driver. Items were missing. Credits issued and inventory adjusted."
-}
-```
-
-**Request - REJECTED:**
-```json
-{
-  "dispute_id": "DISP_002",
-  "resolution_type": "REJECTED",
-  "resolution_notes": "CCTV shows complete delivery. No credits issued."
-}
-```
-
-**Result - APPROVED:**
-- Disputed items deducted from store inventory
-- Credits issued to store (1:1 price ratio)
-- Dispute status changed to APPROVED
-
-**Result - REJECTED:**
-- No inventory changes
-- No credits issued
-- Dispute status changed to REJECTED
+### POST /inventory/store/risk-pool
+**Body:** (none)
 
 ---
 
-## Role Reference
+## Dispute Routes
 
-| Role ID | Role Name | Key Responsibilities |
-|---------|-----------|---------------------|
-| 0 | Admin | Full system access, user management |
-| 1 | CK Staff | Kitchen operations, raw material QC, production |
-| 2 | CK Supply | Dispatch, delivery, cooked product QC, risk pool |
-| 3 | Manager | Product management, recipe creation, dispute resolution |
-| 4 | Store Staff | Order creation, delivery confirmation, dispute filing |
+### POST /disputes
+**Body:** `order_id`, `items` (array), `reason`
 
-## Test Credentials
+### POST /disputes/order
+**Body:** `order_id`
 
-Use these credentials for testing (password: `password123`):
+### POST /disputes/all
+**Body:** (none)
 
-| Email | Role |
-|-------|------|
-| admin@cks.com | Admin (0) |
-| ckstaff@cks.com | CK Staff (1) |
-| cksupply@cks.com | CK Supply (2) |
-| manager@cks.com | Manager (3) |
-| storestaff@store1.com | Store Staff (4) |
+### POST /disputes/my-disputes
+**Body:** (none)
 
-## Common HTTP Status Codes
-
-| Code | Meaning |
-|------|---------|
-| 200 | Success |
-| 201 | Created |
-| 400 | Bad Request - validation error |
-| 401 | Unauthorized - invalid/missing token |
-| 403 | Forbidden - insufficient permissions |
-| 404 | Not Found |
-| 429 | Too Many Requests - rate limit exceeded |
-| 500 | Server Error |
-
-## Error Response Examples
-
-**Validation Error:**
-```json
-{
-  "statusCode": 400,
-  "status": "ERROR",
-  "message": "Validation error: email is required"
-}
-```
-
-**Rate Limit Error:**
-```json
-{
-  "statusCode": 429,
-  "status": "SEC102",
-  "message": "Rate limit exceeded. Please slow down."
-}
-```
-
-## Related Documentation
-
-- [System Flow](SYSTEM_FLOW.md) - Complete daily workflow
-- [Status Codes](STATUS_CODES.md) - Order and authentication status codes
-- [Dispute System](DISPUTE.md) - Detailed dispute handling documentation
+### POST /disputes/resolve
+**Body:** `dispute_id`, `resolution_type`, `resolution_notes`

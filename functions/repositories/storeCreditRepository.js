@@ -23,7 +23,6 @@ const create = async (creditData) => {
 
 const findByStoreStaffId = async (storeStaffId) => {
     try {
-        console.log(`Finding credits for store_staff_id: ${storeStaffId}`);
         const snapshot = await db.collection(COLLECTION)
             .where('store_staff_id', '==', storeStaffId)
             .orderBy('created_at', 'desc')

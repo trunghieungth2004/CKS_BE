@@ -6,10 +6,11 @@ const riskPoolTransferRepository = require('../repositories/riskPoolTransferRepo
 const storeCreditRepository = require('../repositories/storeCreditRepository');
 const productRepository = require('../repositories/productRepository');
 const cookedBatchRepository = require('../repositories/cookedBatchRepository');
+const storeStaffRepository = require('../repositories/storeStaffRepository');
 
 const CREDIT_RATE = 1;
 
-const performProductQC = async (batchId, qcResult, userId, failedItems = [], notes = '') => {
+const performProductQC = async (batchId, qcResult, userId, notes = '') => {
     try {
         const batch = await cookedBatchRepository.findById(batchId);
         
@@ -47,7 +48,6 @@ const performProductQC = async (batchId, qcResult, userId, failedItems = [], not
                 qc_by: userId,
                 qc_date: qcDate,
                 notes: notes || 'Product quality check passed',
-                failed_items: []
             });
 
             return {
@@ -60,16 +60,12 @@ const performProductQC = async (batchId, qcResult, userId, failedItems = [], not
                 qc_status: 'PASS'
             };
         } else if (qcResult === 'FAIL') {
-            if (!failedItems || failedItems.length === 0) {
-                throw new Error('failed_items is required when QC fails');
-            }
 
             await cookedBatchRepository.update(batchId, {
                 qc_status: 'FAIL',
                 qc_by: userId,
                 qc_date: qcDate,
-                qc_notes: notes || 'Product quality check failed',
-                failed_items: failedItems
+                qc_notes: notes || 'Product quality check failed'
             });
 
             await cookedQCRepository.create({
@@ -79,7 +75,6 @@ const performProductQC = async (batchId, qcResult, userId, failedItems = [], not
                 qc_by: userId,
                 qc_date: qcDate,
                 notes: notes || 'Product quality check failed',
-                failed_items: failedItems
             });
 
             return {
@@ -89,8 +84,7 @@ const performProductQC = async (batchId, qcResult, userId, failedItems = [], not
                 order_id: order.order_id,
                 batch_number: batch.batch_number,
                 total_batches: batch.total_batches,
-                qc_status: 'FAIL',
-                failed_items: failedItems
+                qc_status: 'FAIL'
             };
         } else {
             throw new Error('Invalid QC result. Must be PASS or FAIL');
@@ -119,14 +113,31 @@ const getPendingProductQC = async () => {
     }
 };
 
-const searchRiskPoolStores = async (productId, quantity) => {
+const searchRiskPoolStores = async (batchId, excludeStoreStaffId) => {
     try {
+        const batch = await cookedBatchRepository.findById(batchId);
+        if (!batch) {
+            throw new Error('Cooked batch not found');
+        }
+
+        if (batch.qc_status !== 'FAIL') {
+            throw new Error('Can only search risk pool for failed batches');
+        }
+
+        if (!batch.items || batch.items.length === 0) {
+            throw new Error('Failed batch has no items');
+        }
+
+        const failedItem = batch.items[0];
+        const productId = failedItem.product_id;
+        const quantity = failedItem.quantity;
+
         const product = await productRepository.findById(productId);
         if (!product) {
             throw new Error('Product not found');
         }
 
-        const availableStores = await storeInventoryRepository.findAvailableByProduct(productId, quantity);
+        const availableStores = await storeInventoryRepository.findAvailableByProduct(productId, quantity, excludeStoreStaffId);
 
         return availableStores.map(store => ({
             store_staff_id: store.store_staff_id,
@@ -144,7 +155,7 @@ const searchRiskPoolStores = async (productId, quantity) => {
     }
 };
 
-const transferFromRiskPool = async (batchId, productId, quantity, fromStoreStaffId, userId, notes = '') => {
+const transferFromRiskPool = async (batchId, fromStoreStaffId, userId, notes = '') => {
     try {
         const batch = await cookedBatchRepository.findById(batchId);
         if (!batch) {
@@ -154,6 +165,14 @@ const transferFromRiskPool = async (batchId, productId, quantity, fromStoreStaff
         if (batch.qc_status !== 'FAIL') {
             throw new Error('Can only transfer from risk pool for failed batches');
         }
+
+        if (!batch.items || batch.items.length === 0) {
+            throw new Error('Failed batch has no items');
+        }
+
+        const failedItem = batch.items[0];
+        const productId = failedItem.product_id;
+        const quantity = failedItem.quantity;
 
         const product = await productRepository.findById(productId);
         if (!product) {
@@ -176,7 +195,7 @@ const transferFromRiskPool = async (batchId, productId, quantity, fromStoreStaff
         const creditAmount = (product.price || 0) * quantity * CREDIT_RATE;
 
         const transferDate = new Date().toISOString();
-        await riskPoolTransferRepository.create({
+        const transferRecord = await riskPoolTransferRepository.create({
             batch_id: batchId,
             order_id: batch.order_id,
             product_id: productId,
@@ -199,16 +218,51 @@ const transferFromRiskPool = async (batchId, productId, quantity, fromStoreStaff
             notes: `Risk pool transfer for batch ${batchId} - ${product.product_name}`
         });
 
+        await cookedBatchRepository.update(batchId, {
+            qc_status: 'REPLACED',
+            replacement_completed_at: transferDate,
+            replacement_from_store: fromStoreStaffId
+        });
+
+        const order = await orderRepository.findById(batch.order_id);
+        const allBatches = await cookedBatchRepository.findByOrderId(batch.order_id);
+        const nextBatchNumber = allBatches.length + 1;
+
+        const replacementItems = [{
+            product_id: productId,
+            product_name: product.product_name,
+            quantity: quantity,
+            weight_per_unit: product.weight_per_unit || 0,
+            total_weight: (product.weight_per_unit || 0) * quantity
+        }];
+
+        const replacementWeight = (product.weight_per_unit || 0) * quantity;
+
+        await cookedBatchRepository.create({
+            order_id: batch.order_id,
+            store_id: order.store_staff_id,
+            batch_number: nextBatchNumber,
+            total_batches: batch.total_batches,
+            items: replacementItems,
+            total_weight: replacementWeight,
+            qc_status: 'PENDING',
+            replaced: true,
+            source: transferRecord.transfer_id,
+            cooked_by: userId,
+            cooked_at: transferDate
+        });
+
         return {
             success: true,
-            message: 'Risk pool transfer completed and credit awarded',
+            message: 'Risk pool transfer completed, credit awarded, and replacement batch created for QC',
             batch_id: batchId,
             order_id: batch.order_id,
             product_id: productId,
             product_name: product.product_name,
             quantity: quantity,
             from_store_staff_id: fromStoreStaffId,
-            credit_awarded: creditAmount
+            credit_awarded: creditAmount,
+            replacement_batch_created: true
         };
     } catch (error) {
         throw new Error(`Error transferring from risk pool: ${error.message}`);
