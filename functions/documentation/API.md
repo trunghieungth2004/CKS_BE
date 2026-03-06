@@ -18,12 +18,15 @@ All test accounts use password: **CKS@12345**
 ## Auth Routes
 
 ### POST /auth/register
+**Authorization:** Role 0 (Admin)  
 **Body:** `email`, `password`, `username`, `role_id`, `store_code`, `store_name`
 
 ### POST /auth/login
+**Authorization:** None  
 **Body:** `email`, `password`
 
 ### POST /auth/verify
+**Authorization:** None  
 **Body:** `token`
 
 ---
@@ -31,18 +34,23 @@ All test accounts use password: **CKS@12345**
 ## Order Routes
 
 ### POST /orders/create
+**Authorization:** Role 4 (Store Staff)  
 **Body:** `delivery_date`, `items` (array of `{product_id, quantity}`), `store_staff_id` (optional), `credits_to_use` (optional), `notes` (optional)
 
 ### POST /orders/update-status
+**Authorization:** Roles 1, 2, 4 (CK Staff, CK Supply, Store Staff)  
 **Body:** `order_id`, `order_status_id`
 
 ### POST /orders/one
+**Authorization:** Authenticated  
 **Body:** `order_id`
 
 ### POST /orders/my-orders
+**Authorization:** Role 4 (Store Staff)  
 **Body:** (none)
 
 ### POST /orders/all
+**Authorization:** Roles 1, 2, 3 (CK Staff, CK Supply, Manager)  
 **Body:** `order_status_id` (optional)
 
 ---
@@ -50,18 +58,23 @@ All test accounts use password: **CKS@12345**
 ## User Routes
 
 ### POST /users/all
+**Authorization:** Role 0 (Admin)  
 **Body:** `userId` (optional)
 
 ### POST /users/one
+**Authorization:** Authenticated  
 **Body:** `userId`
 
 ### PUT /users
+**Authorization:** Authenticated  
 **Body:** `userId`, `username`
 
 ### DELETE /users/users
+**Authorization:** Role 0 (Admin)  
 **Body:** `userId`
 
 ### POST /users/store-info
+**Authorization:** Role 4 (Store Staff)  
 **Body:** (none)
 
 ---
@@ -69,18 +82,23 @@ All test accounts use password: **CKS@12345**
 ## Product Routes
 
 ### POST /products/create
+**Authorization:** Role 3 (Manager)  
 **Body:** `product_name`, `product_description`, `price`, `weight_per_unit`, `shelf_life_days`, `recipe`, `ingredients`
 
 ### GET /products/all
+**Authorization:** Authenticated  
 **Body:** (none)
 
 ### POST /products/one
+**Authorization:** Authenticated  
 **Body:** `productId`
 
 ### PUT /products/one
+**Authorization:** Role 3 (Manager)  
 **Body:** `productId`, `product_name`, `product_description`, `price`, `shelf_life_days`
 
 ### DELETE /products/one
+**Authorization:** Role 3 (Manager)  
 **Body:** `productId`
 
 ---
@@ -88,21 +106,27 @@ All test accounts use password: **CKS@12345**
 ## Cooked QC Routes
 
 ### POST /qc/pending
+**Authorization:** Role 2 (CK Supply)  
 **Body:** (none)
 
 ### POST /qc/perform
+**Authorization:** Role 2 (CK Supply)  
 **Body:** `batch_id`, `qc_result`, `notes` (optional)
 
 ### POST /qc/credits
+**Authorization:** Role 3 (Manager)  
 **Body:** `store_staff_id`
 
 ### POST /qc/risk-pool
+**Authorization:** Roles 2, 3 (CK Supply, Manager)  
 **Body:** `order_id` (optional), `store_staff_id` (optional)
 
 ### POST /qc/risk-pool/search
+**Authorization:** Role 2 (CK Supply)  
 **Body:** `batch_id`, `exclude_store_staff_id` (optional)
 
 ### POST /qc/risk-pool/transfer
+**Authorization:** Role 2 (CK Supply)  
 **Body:** `batch_id`, `from_store_staff_id`, `notes` (optional)
 
 ---
@@ -110,15 +134,19 @@ All test accounts use password: **CKS@12345**
 ## Cooked Batch Routes
 
 ### POST /cookedBatch/all
+**Authorization:** Roles 2, 3 (CK Supply, Manager)  
 **Body:** `qc_status` (optional), `cook_date` (optional)
 
 ### POST /cookedBatch/one
+**Authorization:** Roles 2, 3 (CK Supply, Manager)  
 **Body:** `batch_id`
 
 ### POST /cookedBatch/by-order
+**Authorization:** Roles 2, 3 (CK Supply, Manager)  
 **Body:** `order_id`
 
 ### POST /cookedBatch/by-store
+**Authorization:** Roles 2, 3 (CK Supply, Manager)  
 **Body:** `store_id`
 
 ---
@@ -126,15 +154,19 @@ All test accounts use password: **CKS@12345**
 ## Raw Batch Routes
 
 ### POST /rawBatch/all
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
 **Body:** `qc_status` (optional), `batch_date` (optional)
 
 ### POST /rawBatch/one
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
 **Body:** `batch_id`
 
 ### POST /rawBatch/consumption
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
 **Body:** `order_id` (optional), `material_id` (optional), `start_date` (optional), `end_date` (optional)
 
 ### POST /rawBatch/supplier
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
 **Body:** `supplier_id`
 
 ---
@@ -142,9 +174,11 @@ All test accounts use password: **CKS@12345**
 ## Raw QC Routes
 
 ### GET /rawQC/pending
+**Authorization:** Role 1 (CK Staff)  
 **Body:** (none)
 
 ### POST /rawQC/perform
+**Authorization:** Role 1 (CK Staff)  
 **Body:** `batch_id`, `qc_result`, `notes` (optional)
 
 ---
@@ -152,12 +186,15 @@ All test accounts use password: **CKS@12345**
 ## Inventory Routes
 
 ### POST /inventory/store
+**Authorization:** Role 4 (Store Staff)  
 **Body:** (none)
 
 ### POST /inventory/ck
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
 **Body:** (none)
 
 ### POST /inventory/store/risk-pool
+**Authorization:** Role 4 (Store Staff)  
 **Body:** (none)
 
 ---
@@ -165,16 +202,21 @@ All test accounts use password: **CKS@12345**
 ## Dispute Routes
 
 ### POST /disputes
+**Authorization:** Role 4 (Store Staff)  
 **Body:** `order_id`, `items` (array), `reason`
 
 ### POST /disputes/order
+**Authorization:** Roles 3, 4 (Manager, Store Staff)  
 **Body:** `order_id`
 
 ### POST /disputes/all
+**Authorization:** Role 3 (Manager)  
 **Body:** (none)
 
 ### POST /disputes/my-disputes
+**Authorization:** Role 4 (Store Staff)  
 **Body:** (none)
 
 ### POST /disputes/resolve
+**Authorization:** Role 3 (Manager)  
 **Body:** `dispute_id`, `resolution_type`, `resolution_notes`
