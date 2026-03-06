@@ -103,6 +103,82 @@ All test accounts use password: **CKS@12345**
 
 ---
 
+## Raw Material Routes
+
+### GET /raw-material/all
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
+**Body:** (none)
+
+### POST /raw-material/one
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
+**Body:** `material_id`
+
+### POST /raw-material/create
+**Authorization:** Role 3 (Manager)  
+**Body:** `material_name`, `unit`, `price`, `description` (optional)
+
+### PUT /raw-material/one
+**Authorization:** Role 3 (Manager)  
+**Body:** `material_id`, `material_name` (optional), `unit` (optional), `price` (optional), `description` (optional)
+
+### DELETE /raw-material/one
+**Authorization:** Role 3 (Manager)  
+**Body:** `material_id`
+
+---
+
+## Supplier Routes
+
+### GET /supplier/all
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
+**Body:** (none)
+
+### POST /supplier/one
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
+**Body:** `supplier_id`
+
+### POST /supplier/create
+**Authorization:** Role 3 (Manager)  
+**Body:** `supplier_name`, `phone`, `contact_person` (optional), `email` (optional), `address` (optional)
+
+### PUT /supplier/one
+**Authorization:** Role 3 (Manager)  
+**Body:** `supplier_id`, `supplier_name` (optional), `contact_person` (optional), `phone` (optional), `email` (optional), `address` (optional)
+
+### DELETE /supplier/one
+**Authorization:** Role 3 (Manager)  
+**Body:** `supplier_id`
+
+---
+
+## Recipe Routes
+
+### GET /recipe/all
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
+**Body:** (none)
+
+### POST /recipe/one
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
+**Body:** `recipe_id`
+
+### POST /recipe/by-product
+**Authorization:** Roles 1, 3 (CK Staff, Manager)  
+**Body:** `product_id`
+
+### POST /recipe/create
+**Authorization:** Role 3 (Manager)  
+**Body:** `product_id`, `recipe_name`, `instructions` (optional), `ingredients` (array of `{material_id, material_name, quantity_per_unit, unit}`)
+
+### PUT /recipe/one
+**Authorization:** Role 3 (Manager)  
+**Body:** `recipe_id`, `recipe_name` (optional), `instructions` (optional), `ingredients` (optional array of `{material_id, material_name, quantity_per_unit, unit}`)
+
+### DELETE /recipe/one
+**Authorization:** Role 3 (Manager)  
+**Body:** `recipe_id`
+
+---
+
 ## Cooked QC Routes
 
 ### POST /qc/pending

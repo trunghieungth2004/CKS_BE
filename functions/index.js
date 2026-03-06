@@ -43,6 +43,9 @@ const cookedBatchRoutes = require('./routes/cookedBatchRoutes');
 const cookedQCRoutes = require('./routes/cookedQCRoutes');
 const disputeRoutes = require('./routes/disputeRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
+const rawMaterialRoutes = require('./routes/rawMaterialRoutes');
+const supplierRoutes = require('./routes/supplierRoutes');
+const recipeRoutes = require('./routes/recipeRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
@@ -54,6 +57,9 @@ app.use('/api/cooked-batch', cookedBatchRoutes);
 app.use('/api/cooked-qc', cookedQCRoutes);
 app.use('/api/dispute', disputeRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/raw-material', rawMaterialRoutes);
+app.use('/api/supplier', supplierRoutes);
+app.use('/api/recipe', recipeRoutes);
 
 app.post('/test/daily', (req, res) => {
   console.log('Received test request with body:', req.body);
