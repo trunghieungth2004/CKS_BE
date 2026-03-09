@@ -54,11 +54,11 @@ const updateOrderStatusSchema = Joi.object({
         }),
 
     order_status_id: Joi.string()
-        .pattern(/^OR1[0-9]{2}$/)
+        .pattern(/^OR10[0-5]$/)
         .required()
         .messages({
             'any.required': 'Order status ID is required',
-            'string.pattern.base': 'Order status ID must be in format OR1XX'
+            'string.pattern.base': 'Order status ID must be in format OR100-OR105'
         })
 });
 

@@ -20,12 +20,13 @@ npm install
 firebase emulators:start --only functions
 ```
 
-**Default Test Users** (password: `password123`):
+**Default Test Users** (password: `CKS@12345`):
 - admin@cks.com (Admin - Role 0)
 - ckstaff@cks.com (CK Staff - Role 1)
 - cksupply@cks.com (CK Supply - Role 2)
 - manager@cks.com (Manager - Role 3)
 - storestaff@store1.com (Store Staff - Role 4)
+- storestaff@store2.com (Store Staff - Role 4, Secondary Branch with 100 units/product for risk pool testing)
 
 ## Architecture Overview
 
@@ -94,10 +95,10 @@ This project follows a **3-Layer Architecture** pattern:
 
 ### Role-Based Access Control
 - **Admin (0)**: Full system access
-- **CK Staff (1)**: Kitchen operations, QC, production
-- **CK Supply (2)**: Dispatch and delivery
-- **Manager (3)**: Product and recipe management
-- **Store Staff (4)**: Order creation and tracking
+- **CK Staff (1)**: Raw material QC, cooking, production management
+- **CK Supply (2)**: Cooked batch QC, risk pool management, dispatch
+- **Manager (3)**: Product and recipe management, dispute resolution
+- **Store Staff (4)**: Order creation and tracking, delivery confirmation
 
 ### Order Management
 - **6:00 PM cutoff** for daily order submissions

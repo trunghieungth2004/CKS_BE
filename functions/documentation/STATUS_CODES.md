@@ -105,7 +105,7 @@ All API responses follow this standardized structure:
 
 ### Security & Rate Limiting Codes (SEC100-SEC199)
 - **SEC100** - LOGIN_RATE_LIMIT_EXCEEDED (5 login attempts per 15 minutes)
-- **SEC101** - GENERAL_RATE_LIMIT_EXCEEDED (100 requests per 15 minutes)
+- **SEC101** - GENERAL_RATE_LIMIT_EXCEEDED (100 requests per 5 minutes)
 - **SEC102** - STRICT_RATE_LIMIT_EXCEEDED (10 requests per minute)
 - **SEC103** - PAYLOAD_TOO_LARGE (request body exceeds 10MB limit)
 - **SEC104** - SUSPICIOUS_ACTIVITY_DETECTED

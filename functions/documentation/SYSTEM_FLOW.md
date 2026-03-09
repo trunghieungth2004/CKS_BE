@@ -431,8 +431,8 @@
 
 | Role | ID | Responsibilities |
 |------|----|--------------------|
-| **Admin** | 0 | Full system access, resolve disputes, cancel orders |
-| **CK Staff** | 1 | Raw material QC, cooking, production management |
+| **Admin** | 0 | Full system access, user management, system configuration |
+| **CK Staff** | 1 | Raw material QC, cooking, production management, material deduction |
 | **CK Supply** | 2 | Cooked batch QC, risk pool management, dispatch, delivery updates |
 | **Manager** | 3 | Create products/recipes, resolve disputes, view all disputes |
 | **Store Staff** | 4 | Create orders, confirm delivery, file disputes, view own disputes |
