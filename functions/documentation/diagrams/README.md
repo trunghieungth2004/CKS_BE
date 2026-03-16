@@ -3,8 +3,8 @@
 This document provides accurate documentation for **ALL 23 FIRESTORE COLLECTIONS** and their relationships in the CKS (Central Kitchen System).
 
 ## Files
-- **`LD_SWD_v2.drawio`** - Accurate NoSQL-to-SQL representation with all 23 collections
-- **`LD_SWD.drawio`** - Original diagram (deprecated)
+- **`LD_SWD.drawio`** - Current logical data model (NoSQL with optional SQL-strict constraints notes)
+- **`SD_SWD.drawio`** - Current sequence diagram
 
 ## How to Open
 - VS Code: `code --install-extension hediet.vscode-drawio`
@@ -439,7 +439,9 @@ const create = async (inventoryData) => {
     });
 };
 ```
-**Why**: Store inventory contains finished products.
+**Why**: A store can hold many different products, and the same product can appear in inventories of many stores.
+
+**SQL strict note**: With `UNIQUE(store_staff_id, product_id)`, each store has at most one inventory row per product while still holding many products.
 
 #### R29: `orders` → `batch_consumption` (One-to-Many)
 ```javascript

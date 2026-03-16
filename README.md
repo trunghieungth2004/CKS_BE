@@ -159,6 +159,20 @@ This project follows a **3-Layer Architecture** pattern:
 - `waste_logs`, `store_credits`, `risk_pool_transfers` - QC and credit system
 - `store_staff` - Store staff information
 
+**Key Relationship Cardinalities (Verified Against Code):**
+- Many `users` belong to one `role` (`users.role_id -> roles.role_id`)
+- Many `orders` share one order `status` (`orders.order_status_id -> statuses.status_id`)
+- Many `recipe_ingredients` can reference one `raw_material`
+- One `store_staff` has many `store_inventory` rows
+- One `product` can appear in many `store_inventory` rows (across different stores)
+
+**If Strictly Enforced in SQL:**
+- Cardinality above remains valid for `products -> store_inventory` (one product can still appear in many stores).
+- Add uniqueness/constraints for deterministic rows:
+  - `store_staff.user_id` UNIQUE (1 user -> 0/1 store staff)
+  - `recipes.product_id` UNIQUE (0/1 recipe per product)
+  - `store_inventory` UNIQUE(`store_staff_id`, `product_id`) for single-row-per-product-per-store behavior (store still holds many products)
+
 Creates sample roles, statuses, products, materials, suppliers, and test users.
 
 ## Project Structure
