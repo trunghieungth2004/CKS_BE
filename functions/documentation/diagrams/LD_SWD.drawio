@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.5.2 Safari/537.36" version="29.5.2">
   <diagram name="CKS Database Schema (NoSQL + SQL Constraints)" id="CKS-DB-2026">
-    <mxGraphModel dx="1791" dy="237" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="2000" math="0" shadow="0">
+    <mxGraphModel dx="2806" dy="854" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="2000" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -44,7 +44,7 @@
           <mxGeometry height="160" width="220" x="40" y="900" as="geometry" />
         </mxCell>
         <mxCell id="production_batches" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=5;spacingTop=5;fontSize=10;fontFamily=Helvetica;" value="&lt;b&gt;raw&lt;/b&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;_batches&lt;/b&gt;&lt;div&gt;&lt;br&gt;batch_id: varchar PK&lt;br&gt;supply_id: varchar FK→raw_material_supplies&lt;br&gt;material_id: varchar FK→raw_materials&lt;br&gt;supplier_id: varchar FK→suppliers&lt;br&gt;batch_number: varchar&lt;br&gt;quantity: decimal(10,2) (max 5kg)&lt;br&gt;unit: varchar&lt;br&gt;batch_date: date&lt;br&gt;qc_status: varchar (PENDING/PASS/FAIL)&lt;br&gt;qc_by: varchar FK→users&lt;br&gt;qc_date: timestamp&lt;/div&gt;" vertex="1">
-          <mxGeometry height="220" width="260" x="800" y="640" as="geometry" />
+          <mxGeometry height="240" width="260" x="800" y="640" as="geometry" />
         </mxCell>
         <mxCell id="cooked_batches" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacingLeft=5;spacingTop=5;fontSize=10;fontFamily=Helvetica;" value="&lt;b&gt;cooked_batches&lt;/b&gt;&#xa;&#xa;batch_id: varchar PK&#xa;order_id: varchar FK→orders&#xa;store_id: varchar FK→store_staff&#xa;batch_number: int&#xa;total_batches: int&#xa;items: array[{product_id, product_name, quantity, weight_per_unit, total_weight}]&#xa;Note: Single product per batch, max 5kg&#xa;qc_status: varchar (PENDING/PASS/FAIL/REPLACED)&#xa;replaced: boolean (true if from risk pool)&#xa;source: varchar (transfer_id or &#39;&#39; for kitchen)&#xa;created_at: timestamp" vertex="1">
           <mxGeometry height="260" width="280" x="410" y="910" as="geometry" />
@@ -153,7 +153,7 @@
             <mxPoint x="390" y="690" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="rel15" edge="1" parent="1" source="raw_materials" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERone;endFill=0;startArrow=ERmany;startFill=0;" target="ck_inventory">
+        <mxCell id="rel15" edge="1" parent="1" source="raw_materials" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;" target="ck_inventory">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="1100" y="80" />
@@ -177,11 +177,11 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="rel18" edge="1" parent="1" source="orders" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="order_disputes">
+        <mxCell id="rel18" edge="1" parent="1" source="orders" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" target="order_disputes">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint y="805" />
-              <mxPoint y="1320" />
+              <mxPoint y="1240" />
             </Array>
           </mxGeometry>
         </mxCell>

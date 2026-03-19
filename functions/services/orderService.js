@@ -21,6 +21,18 @@ const checkCutoffTime = () => {
     return currentHour < CUTOFF_HOUR;
 };
 
+const isTomorrowDelivery = (deliveryDateObj) => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return (
+        deliveryDateObj.getFullYear() === tomorrow.getFullYear() &&
+        deliveryDateObj.getMonth() === tomorrow.getMonth() &&
+        deliveryDateObj.getDate() === tomorrow.getDate()
+    );
+};
+
 const createOrder = async (orderData, userId) => {
     const { store_staff_id, delivery_date, items, notes, credits_to_use } = orderData;
 
@@ -56,11 +68,13 @@ const createOrder = async (orderData, userId) => {
     }
 
     const beforeCutoff = checkCutoffTime();
-    const initialStatusId = beforeCutoff ? 'OR100' : 'OR105';
-    
-    if (!beforeCutoff) {
-        throw new Error('Order submission past cut-off time (6 PM). Order automatically cancelled.');
+    const isTomorrow = isTomorrowDelivery(deliveryDateObj);
+
+    if (!beforeCutoff && isTomorrow) {
+        throw new Error('Order submission past cut-off time (6 PM) for next-day delivery.');
     }
+
+    const initialStatusId = 'OR100';
 
     let creditsApplied = 0;
     let creditTransactions = [];
