@@ -1,18 +1,10 @@
-const rawBatchRepository = require('../repositories/rawBatchRepository');
-const batchConsumptionRepository = require('../repositories/batchConsumptionRepository');
-const supplierRepository = require('../repositories/supplierRepository');
-const orderRepository = require('../repositories/orderRepository');
+const rawBatchService = require('../services/rawBatchService');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getAllBatches = async (req, res) => {
     try {
         const { qc_status, batch_date } = req.body;
-        let batches = null;
-        if (qc_status && batch_date) {
-            batches = await rawBatchRepository.findByQCStatusAndDate(qc_status, batch_date);
-        } else {
-            batches = await rawBatchRepository.findAll();
-        }
+        const batches = await rawBatchService.getAllBatches(qc_status, batch_date);
         return successResponse(res, 200, 'Batches retrieved successfully', batches);
     } catch (error) {
         return errorResponse(res, 500, error.message, 'SYS100');
@@ -27,23 +19,13 @@ const getOneBatch = async (req, res) => {
             return errorResponse(res, 400, 'batch_id is required', 'VAL100');
         }
         
-        const batch = await rawBatchRepository.findById(batch_id);
-        
-        if (!batch) {
+        const result = await rawBatchService.getOneBatch(batch_id);
+
+        if (!result) {
             return errorResponse(res, 404, 'Batch not found', 'QC103');
         }
-        
-        const replacedBatch = batch.replaced_batch_id 
-            ? await rawBatchRepository.findById(batch.replaced_batch_id)
-            : null;
-        
-        const replacementBatches = await rawBatchRepository.findReplacementBatches(batch_id);
-        
-        return successResponse(res, 200, 'Batch retrieved successfully', {
-            batch,
-            replaced_batch: replacedBatch,
-            replacement_batches: replacementBatches
-        });
+
+        return successResponse(res, 200, 'Batch retrieved successfully', result);
     } catch (error) {
         return errorResponse(res, 500, error.message, 'SYS100');
     }
@@ -53,23 +35,15 @@ const getBatchConsumption = async (req, res) => {
     try {
         const { order_id, material_id, start_date, end_date } = req.body;
         
-        if (order_id) {
-            const orderExists = await orderRepository.findById(order_id);
-            if (!orderExists) {
-                return errorResponse(res, 404, 'Order not found', 'DB101');
-            }
-        }
-        
-        let consumption;
-        
-        if (order_id) {
-            consumption = await batchConsumptionRepository.findByOrderId(order_id);
-        } else if (material_id) {
-            consumption = await batchConsumptionRepository.findByMaterialId(material_id);
-        } else if (start_date && end_date) {
-            consumption = await batchConsumptionRepository.findByDateRange(start_date, end_date);
-        } else {
-            consumption = await batchConsumptionRepository.findAll();
+        const consumption = await rawBatchService.getBatchConsumption({
+            order_id,
+            material_id,
+            start_date,
+            end_date
+        });
+
+        if (consumption?.error) {
+            return errorResponse(res, consumption.statusCode, consumption.error, consumption.statusId);
         }
         
         return successResponse(res, 200, 'Batch consumption retrieved successfully', consumption);
@@ -86,13 +60,11 @@ const getBatchesBySupplier = async (req, res) => {
             return errorResponse(res, 400, 'supplier_id is required', 'VAL100');
         }
         
-        const supplierExists = await supplierRepository.findById(supplier_id);
-        if (!supplierExists) {
-            return errorResponse(res, 404, 'Supplier not found', 'DB101');
+        const batches = await rawBatchService.getBatchesBySupplier(supplier_id);
+        if (batches?.error) {
+            return errorResponse(res, batches.statusCode, batches.error, batches.statusId);
         }
-        
-        const batches = await rawBatchRepository.findBySupplierId(supplier_id);
-        
+
         return successResponse(res, 200, 'Batches retrieved successfully', batches);
     } catch (error) {
         return errorResponse(res, 500, error.message, 'SYS100');

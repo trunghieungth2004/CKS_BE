@@ -1,26 +1,17 @@
-const storeInventoryRepository = require('../repositories/storeInventoryRepository');
-const ckInventoryRepository = require('../repositories/ckInventoryRepository');
-const storeStaffRepository = require('../repositories/storeStaffRepository');
-const riskPoolRepository = require('../repositories/riskPoolTransferRepository');
+const inventoryService = require('../services/inventoryService');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getStoreInventory = async (req, res) => {
     try {
         const userId = req.user.uid;
 
-        const storeStaff = await storeStaffRepository.findByUserId(userId);
-        
-        if (!storeStaff) {
+        const result = await inventoryService.getStoreInventory(userId);
+
+        if (!result) {
             return errorResponse(res, 404, 'Store staff record not found', 'INV100');
         }
 
-        const inventory = await storeInventoryRepository.findByStoreStaff(storeStaff.store_staff_id);
-
-        return successResponse(res, 200, 'Store inventory retrieved successfully', {
-            store_staff_id: storeStaff.store_staff_id,
-            store_id: storeStaff.store_id,
-            inventory
-        }, 'INV101');
+        return successResponse(res, 200, 'Store inventory retrieved successfully', result, 'INV101');
     } catch (error) {
         return errorResponse(res, 500, error.message, 'SYS100');
     }
@@ -28,11 +19,8 @@ const getStoreInventory = async (req, res) => {
 
 const getCKInventory = async (req, res) => {
     try {
-        const inventory = await ckInventoryRepository.findAll();
-
-        return successResponse(res, 200, 'CK inventory retrieved successfully', {
-            inventory
-        }, 'INV102');
+        const result = await inventoryService.getCKInventory();
+        return successResponse(res, 200, 'CK inventory retrieved successfully', result, 'INV102');
     } catch (error) {
         return errorResponse(res, 500, error.message, 'SYS100');
     }
@@ -42,18 +30,13 @@ const getStoreRiskPoolInventory = async (req, res) => {
     try {
         const userId = req.user.uid;
 
-        const storeStaff = await storeStaffRepository.findByUserId(userId);
-        
-        if (!storeStaff) {
+        const result = await inventoryService.getStoreRiskPoolInventory(userId);
+
+        if (!result) {
             return errorResponse(res, 404, 'Store staff record not found', 'INV100');
         }
 
-        const riskPoolTransfers = await riskPoolRepository.findByStoreStaffId(storeStaff.store_staff_id);
-
-        return successResponse(res, 200, 'Store risk pool inventory retrieved successfully', {
-            store_staff_id: storeStaff.store_staff_id,
-            riskPoolTransfers
-        }, 'INV103');
+        return successResponse(res, 200, 'Store risk pool inventory retrieved successfully', result, 'INV103');
     } catch (error) {
         return errorResponse(res, 500, error.message, 'SYS100');
     }

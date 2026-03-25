@@ -113,6 +113,47 @@ const getPendingProductQC = async () => {
     }
 };
 
+const getStoreCredits = async (storeStaffId) => {
+    const storeStaffExists = await storeStaffRepository.findById(storeStaffId);
+    if (!storeStaffExists) {
+        return { error: 'Store staff not found', statusCode: 404, statusId: 'USER103' };
+    }
+
+    const credits = await storeCreditRepository.findByStoreStaffId(storeStaffId);
+    const totalCredits = await storeCreditRepository.getTotalCredits(storeStaffId);
+
+    return {
+        credits,
+        total_credits: totalCredits
+    };
+};
+
+const getRiskPoolTransfers = async ({ order_id, store_staff_id }) => {
+    if (order_id) {
+        const orderExists = await orderRepository.findById(order_id);
+        if (!orderExists) {
+            return { error: 'Order not found', statusCode: 404, statusId: 'DB101' };
+        }
+    }
+
+    if (store_staff_id) {
+        const storeStaffExists = await storeStaffRepository.findById(store_staff_id);
+        if (!storeStaffExists) {
+            return { error: 'Store staff not found', statusCode: 404, statusId: 'USER103' };
+        }
+    }
+
+    if (order_id) {
+        return riskPoolTransferRepository.findByOrderId(order_id);
+    }
+
+    if (store_staff_id) {
+        return riskPoolTransferRepository.findByStoreStaffId(store_staff_id);
+    }
+
+    return riskPoolTransferRepository.findAll();
+};
+
 const searchRiskPoolStores = async (batchId, excludeStoreStaffId) => {
     try {
         const batch = await cookedBatchRepository.findById(batchId);
@@ -272,6 +313,8 @@ const transferFromRiskPool = async (batchId, fromStoreStaffId, userId, notes = '
 module.exports = {
     performProductQC,
     getPendingProductQC,
+    getStoreCredits,
+    getRiskPoolTransfers,
     searchRiskPoolStores,
     transferFromRiskPool
 };

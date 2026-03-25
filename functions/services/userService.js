@@ -1,4 +1,6 @@
 const userRepository = require('../repositories/userRepository');
+const storeStaffRepository = require('../repositories/storeStaffRepository');
+const storeCreditRepository = require('../repositories/storeCreditRepository');
 
 const getUserById = async (userId) => {
     const user = await userRepository.findById(userId);
@@ -57,9 +59,28 @@ const deleteUser = async (userId) => {
     return await userRepository.deleteById(userId);
 };
 
+const getStoreInfo = async (userId) => {
+    const storeStaff = await storeStaffRepository.findByUserId(userId);
+    if (!storeStaff) {
+        return null;
+    }
+
+    const credits = await storeCreditRepository.findByStoreStaffId(storeStaff.store_staff_id);
+    const totalCredits = await storeCreditRepository.getTotalCredits(storeStaff.store_staff_id);
+
+    return {
+        store_staff_id: storeStaff.store_staff_id,
+        store_id: storeStaff.store_id,
+        user_id: storeStaff.user_id,
+        credits,
+        totalCredits
+    };
+};
+
 module.exports = {
     getUserById,
     getAllUsers,
     updateUser,
     deleteUser,
+    getStoreInfo,
 };

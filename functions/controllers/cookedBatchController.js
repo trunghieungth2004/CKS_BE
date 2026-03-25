@@ -1,16 +1,10 @@
-const cookedBatchRepository = require('../repositories/cookedBatchRepository');
-const orderRepository = require('../repositories/orderRepository');
+const cookedBatchService = require('../services/cookedBatchService');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getAllCookedBatches = async (req, res) => {
     try {
         const { qc_status, cook_date } = req.body;
-        let batches = null;
-        if (qc_status && cook_date) {
-            batches = await cookedBatchRepository.findByQCStatusAndDate(qc_status, cook_date);
-        } else {
-            batches = await cookedBatchRepository.findAll();
-        }
+        const batches = await cookedBatchService.getAllCookedBatches(qc_status, cook_date);
         
         return successResponse(res, 200, 'Cooked batches retrieved successfully', batches);
     } catch (error) {
@@ -26,7 +20,7 @@ const getCookedBatchById = async (req, res) => {
             return errorResponse(res, 400, 'batch_id is required', 'VAL100');
         }
         
-        const batch = await cookedBatchRepository.findById(batch_id);
+        const batch = await cookedBatchService.getCookedBatchById(batch_id);
         
         if (!batch) {
             return errorResponse(res, 404, 'Cooked batch not found', 'BAT103');
@@ -46,15 +40,9 @@ const getCookedBatchesByOrder = async (req, res) => {
             return errorResponse(res, 400, 'order_id is required', 'VAL100');
         }
         
-        const orderExists = await orderRepository.findById(order_id);
-        if (!orderExists) {
-            return errorResponse(res, 404, 'Order not found', 'DB101');
-        }
-        
-        const batches = await cookedBatchRepository.findByOrderId(order_id);
-        
-        if (!batches || batches.length === 0) {
-            return errorResponse(res, 404, 'No cooked batches found for this order', 'BAT103');
+        const batches = await cookedBatchService.getCookedBatchesByOrder(order_id);
+        if (batches?.error) {
+            return errorResponse(res, batches.statusCode, batches.error, batches.statusId);
         }
         
         return successResponse(res, 200, 'Cooked batches retrieved successfully', batches);
@@ -71,7 +59,7 @@ const getCookedBatchesByStore = async (req, res) => {
             return errorResponse(res, 400, 'store_id is required', 'VAL100');
         }
         
-        const batches = await cookedBatchRepository.findByStoreId(store_id);
+        const batches = await cookedBatchService.getCookedBatchesByStore(store_id);
         
         return successResponse(res, 200, 'Cooked batches retrieved successfully', batches);
     } catch (error) {

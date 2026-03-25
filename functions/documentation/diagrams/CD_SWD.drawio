@@ -1,0 +1,188 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64)" version="29.6.6">
+  <diagram name="CD_SWD" id="CD-SWD-2026-V4">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2600" pageHeight="1900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" parent="1" value="Product + Recipe Full Route Flow (Dispute-Style CD)" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;" vertex="1">
+          <mxGeometry x="720" y="20" width="1200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="productRoutes" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#f8e5c0;strokeColor=#9b7d45;" value="ProductRoutes" vertex="1">
+          <mxGeometry x="40" y="120" width="360" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="productRoutesDiv" parent="productRoutes" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1">
+          <mxGeometry y="34" width="360" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="productRoutesM1" parent="productRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+POST /create" vertex="1">
+          <mxGeometry y="42" width="360" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="productRoutesM2" parent="productRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+GET /all" vertex="1">
+          <mxGeometry y="76" width="360" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="productRoutesM3" parent="productRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+POST /one" vertex="1">
+          <mxGeometry y="110" width="360" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="productRoutesM4" parent="productRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+PUT /one" vertex="1">
+          <mxGeometry y="144" width="360" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="productRoutesM5" parent="productRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+DELETE /one" vertex="1">
+          <mxGeometry y="178" width="360" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="recipeRoutes" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#f8e5c0;strokeColor=#9b7d45;" value="RecipeRoutes" vertex="1">
+          <mxGeometry x="480" y="120" width="390" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="recipeRoutesDiv" parent="recipeRoutes" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1">
+          <mxGeometry y="34" width="390" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="recipeRoutesM1" parent="recipeRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+GET /all" vertex="1">
+          <mxGeometry y="42" width="390" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="recipeRoutesM2" parent="recipeRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+POST /one" vertex="1">
+          <mxGeometry y="76" width="390" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="recipeRoutesM3" parent="recipeRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+POST /by-product" vertex="1">
+          <mxGeometry y="110" width="390" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="recipeRoutesM4" parent="recipeRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+POST /create" vertex="1">
+          <mxGeometry y="144" width="390" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="recipeRoutesM5" parent="recipeRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+PUT /one" vertex="1">
+          <mxGeometry y="178" width="390" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="recipeRoutesM6" parent="recipeRoutes" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+DELETE /one" vertex="1">
+          <mxGeometry y="212" width="390" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="productController" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#d5ead0;strokeColor=#5f8e54;" value="ProductController" vertex="1">
+          <mxGeometry x="40" y="430" width="390" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="pcDiv" parent="productController" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1">
+          <mxGeometry y="34" width="390" height="8" as="geometry" />
+        </mxCell>
+        <mxCell id="pcM1" parent="productController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+createProduct(req,res)" vertex="1"><mxGeometry y="42" width="390" height="34" as="geometry" /></mxCell>
+        <mxCell id="pcM2" parent="productController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getProducts(req,res)" vertex="1"><mxGeometry y="76" width="390" height="34" as="geometry" /></mxCell>
+        <mxCell id="pcM3" parent="productController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getProductById(req,res)" vertex="1"><mxGeometry y="110" width="390" height="34" as="geometry" /></mxCell>
+        <mxCell id="pcM4" parent="productController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+updateProduct(req,res)" vertex="1"><mxGeometry y="144" width="390" height="34" as="geometry" /></mxCell>
+        <mxCell id="pcM5" parent="productController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+deleteProduct(req,res)" vertex="1"><mxGeometry y="178" width="390" height="34" as="geometry" /></mxCell>
+
+        <mxCell id="recipeController" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#d5ead0;strokeColor=#5f8e54;" value="RecipeController" vertex="1">
+          <mxGeometry x="480" y="430" width="430" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="rcDiv" parent="recipeController" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="34" width="430" height="8" as="geometry" /></mxCell>
+        <mxCell id="rcM1" parent="recipeController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getAllRecipes(req,res)" vertex="1"><mxGeometry y="42" width="430" height="34" as="geometry" /></mxCell>
+        <mxCell id="rcM2" parent="recipeController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getRecipeById(req,res)" vertex="1"><mxGeometry y="76" width="430" height="34" as="geometry" /></mxCell>
+        <mxCell id="rcM3" parent="recipeController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getRecipeByProductId(req,res)" vertex="1"><mxGeometry y="110" width="430" height="34" as="geometry" /></mxCell>
+        <mxCell id="rcM4" parent="recipeController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+createRecipe(req,res)" vertex="1"><mxGeometry y="144" width="430" height="34" as="geometry" /></mxCell>
+        <mxCell id="rcM5" parent="recipeController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+updateRecipe(req,res)" vertex="1"><mxGeometry y="178" width="430" height="34" as="geometry" /></mxCell>
+        <mxCell id="rcM6" parent="recipeController" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+deleteRecipe(req,res)" vertex="1"><mxGeometry y="212" width="430" height="34" as="geometry" /></mxCell>
+
+        <mxCell id="productService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#fce5d6;strokeColor=#b26d3a;" value="ProductService" vertex="1">
+          <mxGeometry x="60" y="760" width="390" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="psDiv" parent="productService" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="34" width="390" height="8" as="geometry" /></mxCell>
+        <mxCell id="psM1" parent="productService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+createProduct(payload,userId)" vertex="1"><mxGeometry y="42" width="390" height="34" as="geometry" /></mxCell>
+        <mxCell id="psM2" parent="productService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getProducts()" vertex="1"><mxGeometry y="76" width="390" height="34" as="geometry" /></mxCell>
+        <mxCell id="psM3" parent="productService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getProductById(productId)" vertex="1"><mxGeometry y="110" width="390" height="34" as="geometry" /></mxCell>
+        <mxCell id="psM4" parent="productService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+updateProduct(productId,payload)" vertex="1"><mxGeometry y="144" width="390" height="34" as="geometry" /></mxCell>
+        <mxCell id="psM5" parent="productService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+deleteProduct(productId)" vertex="1"><mxGeometry y="178" width="390" height="34" as="geometry" /></mxCell>
+
+        <mxCell id="recipeService" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=34;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#fce5d6;strokeColor=#b26d3a;" value="RecipeService" vertex="1">
+          <mxGeometry x="520" y="760" width="470" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="rsDiv" parent="recipeService" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="34" width="470" height="8" as="geometry" /></mxCell>
+        <mxCell id="rsM1" parent="recipeService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getAllRecipes()" vertex="1"><mxGeometry y="42" width="470" height="34" as="geometry" /></mxCell>
+        <mxCell id="rsM2" parent="recipeService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getRecipeById(recipeId)" vertex="1"><mxGeometry y="76" width="470" height="34" as="geometry" /></mxCell>
+        <mxCell id="rsM3" parent="recipeService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+getRecipeByProductId(productId)" vertex="1"><mxGeometry y="110" width="470" height="34" as="geometry" /></mxCell>
+        <mxCell id="rsM4" parent="recipeService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+createRecipe(payload,userId)" vertex="1"><mxGeometry y="144" width="470" height="34" as="geometry" /></mxCell>
+        <mxCell id="rsM5" parent="recipeService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+updateRecipe(payload)" vertex="1"><mxGeometry y="178" width="470" height="34" as="geometry" /></mxCell>
+        <mxCell id="rsM6" parent="recipeService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+deleteRecipe(recipeId)" vertex="1"><mxGeometry y="212" width="470" height="34" as="geometry" /></mxCell>
+
+        <mxCell id="productRepo" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#f9d6d5;strokeColor=#b85450;" value="ProductRepository" vertex="1">
+          <mxGeometry x="40" y="1120" width="360" height="205" as="geometry" />
+        </mxCell>
+        <mxCell id="prDiv" parent="productRepo" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="32" width="360" height="8" as="geometry" /></mxCell>
+        <mxCell id="prM1" parent="productRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+create(data)" vertex="1"><mxGeometry y="40" width="360" height="33" as="geometry" /></mxCell>
+        <mxCell id="prM2" parent="productRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+findAll()" vertex="1"><mxGeometry y="73" width="360" height="33" as="geometry" /></mxCell>
+        <mxCell id="prM3" parent="productRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+findById(id)" vertex="1"><mxGeometry y="106" width="360" height="33" as="geometry" /></mxCell>
+        <mxCell id="prM4" parent="productRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+update(id,data)" vertex="1"><mxGeometry y="139" width="360" height="33" as="geometry" /></mxCell>
+        <mxCell id="prM5" parent="productRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+deleteProduct(id)" vertex="1"><mxGeometry y="172" width="360" height="33" as="geometry" /></mxCell>
+
+        <mxCell id="recipeRepo" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#f9d6d5;strokeColor=#b85450;" value="RecipeRepository" vertex="1">
+          <mxGeometry x="450" y="1120" width="390" height="238" as="geometry" />
+        </mxCell>
+        <mxCell id="rrDiv" parent="recipeRepo" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="32" width="390" height="8" as="geometry" /></mxCell>
+        <mxCell id="rrM1" parent="recipeRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+create(data)" vertex="1"><mxGeometry y="40" width="390" height="33" as="geometry" /></mxCell>
+        <mxCell id="rrM2" parent="recipeRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+findAll()" vertex="1"><mxGeometry y="73" width="390" height="33" as="geometry" /></mxCell>
+        <mxCell id="rrM3" parent="recipeRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+findById(id)" vertex="1"><mxGeometry y="106" width="390" height="33" as="geometry" /></mxCell>
+        <mxCell id="rrM4" parent="recipeRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+findByProductId(productId)" vertex="1"><mxGeometry y="139" width="390" height="33" as="geometry" /></mxCell>
+        <mxCell id="rrM5" parent="recipeRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+update(id,data)" vertex="1"><mxGeometry y="172" width="390" height="33" as="geometry" /></mxCell>
+        <mxCell id="rrM6" parent="recipeRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+deleteRecipe(id)" vertex="1"><mxGeometry y="205" width="390" height="33" as="geometry" /></mxCell>
+
+        <mxCell id="ingredientRepo" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#f9d6d5;strokeColor=#b85450;" value="RecipeIngredientRepository" vertex="1">
+          <mxGeometry x="890" y="1120" width="410" height="172" as="geometry" />
+        </mxCell>
+        <mxCell id="riDiv" parent="ingredientRepo" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="32" width="410" height="8" as="geometry" /></mxCell>
+        <mxCell id="riM1" parent="ingredientRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+create(data)" vertex="1"><mxGeometry y="40" width="410" height="33" as="geometry" /></mxCell>
+        <mxCell id="riM2" parent="ingredientRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+findByRecipeId(recipeId)" vertex="1"><mxGeometry y="73" width="410" height="33" as="geometry" /></mxCell>
+        <mxCell id="riM3" parent="ingredientRepo" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+deleteIngredient(id)" vertex="1"><mxGeometry y="106" width="410" height="33" as="geometry" /></mxCell>
+
+        <mxCell id="productEntity" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#fff7e6;strokeColor=#9b7d45;" value="Product" vertex="1">
+          <mxGeometry x="60" y="1500" width="360" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="pe1" parent="productEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String product_id" vertex="1"><mxGeometry y="30" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="pe2" parent="productEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String product_name" vertex="1"><mxGeometry y="58" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="pe3" parent="productEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String product_description" vertex="1"><mxGeometry y="86" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="pe4" parent="productEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+Number price" vertex="1"><mxGeometry y="114" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="pe5" parent="productEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+Number weight_per_unit" vertex="1"><mxGeometry y="142" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="pe6" parent="productEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+Number shelf_life_days" vertex="1"><mxGeometry y="170" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="pe7" parent="productEntity" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="198" width="360" height="12" as="geometry" /></mxCell>
+
+        <mxCell id="recipeEntity" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#fff7e6;strokeColor=#9b7d45;" value="Recipe" vertex="1">
+          <mxGeometry x="520" y="1500" width="360" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="re1" parent="recipeEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String recipe_id" vertex="1"><mxGeometry y="30" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="re2" parent="recipeEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String product_id" vertex="1"><mxGeometry y="58" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="re3" parent="recipeEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String recipe_name" vertex="1"><mxGeometry y="86" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="re4" parent="recipeEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String instructions" vertex="1"><mxGeometry y="114" width="360" height="28" as="geometry" /></mxCell>
+        <mxCell id="re5" parent="recipeEntity" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="142" width="360" height="12" as="geometry" /></mxCell>
+
+        <mxCell id="ingredientEntity" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;fillColor=#fff7e6;strokeColor=#9b7d45;" value="RecipeIngredient" vertex="1">
+          <mxGeometry x="980" y="1500" width="390" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ie1" parent="ingredientEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String ingredient_id" vertex="1"><mxGeometry y="30" width="390" height="28" as="geometry" /></mxCell>
+        <mxCell id="ie2" parent="ingredientEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String recipe_id" vertex="1"><mxGeometry y="58" width="390" height="28" as="geometry" /></mxCell>
+        <mxCell id="ie3" parent="ingredientEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+String material_id" vertex="1"><mxGeometry y="86" width="390" height="28" as="geometry" /></mxCell>
+        <mxCell id="ie4" parent="ingredientEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;" value="+Number quantity_per_unit" vertex="1"><mxGeometry y="114" width="390" height="28" as="geometry" /></mxCell>
+        <mxCell id="ie5" parent="ingredientEntity" style="line;strokeWidth=1;fillColor=none;strokeColor=inherit;" vertex="1"><mxGeometry y="142" width="390" height="12" as="geometry" /></mxCell>
+
+        <mxCell id="e1" edge="1" parent="1" source="productRoutes" target="productController" value="uses" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="recipeRoutes" target="recipeController" value="uses" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="productController" target="productService" value="uses" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="recipeController" target="recipeService" value="uses" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e5" edge="1" parent="1" source="productService" target="productRepo" value="uses (1..1)" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="productService" target="recipeRepo" value="uses (0..1)" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="420" y="1040" /><mxPoint x="700" y="1040" /></Array></mxGeometry></mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="productService" target="ingredientRepo" value="uses (0..*)" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="340" y="1010" /><mxPoint x="1040" y="1010" /></Array></mxGeometry></mxCell>
+
+        <mxCell id="e8" edge="1" parent="1" source="recipeService" target="productRepo" value="uses (1..1)" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="760" y="1080" /><mxPoint x="210" y="1080" /></Array></mxGeometry></mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="recipeService" target="recipeRepo" value="uses (1..1)" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="recipeService" target="ingredientRepo" value="uses (0..*)" style="curved=1;dashed=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e11" edge="1" parent="1" source="productRepo" target="productEntity" value="creates/returns" style="curved=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="recipeRepo" target="recipeEntity" value="creates/returns" style="curved=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="ingredientRepo" target="ingredientEntity" value="creates/returns" style="curved=1;startArrow=none;endArrow=open;endSize=12;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e14" edge="1" parent="1" source="productEntity" target="recipeEntity" value="contains recipe" style="curved=1;startArrow=diamondThin;startSize=14;startFill=1;endArrow=none;rounded=0;"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="470" y="1650" /></Array></mxGeometry></mxCell>
+        <mxCell id="e14l1" parent="e14" style="edgeLabel;resizable=0;labelBackgroundColor=none;fontSize=12;align=right;verticalAlign=top;" value="1" vertex="1"><mxGeometry relative="1" x="-1" as="geometry" /></mxCell>
+        <mxCell id="e14l2" parent="e14" style="edgeLabel;resizable=0;labelBackgroundColor=none;fontSize=12;align=left;verticalAlign=bottom;" value="0..1" vertex="1"><mxGeometry relative="1" x="1" as="geometry" /></mxCell>
+
+        <mxCell id="e15" edge="1" parent="1" source="recipeEntity" target="ingredientEntity" value="contains ingredients" style="curved=1;startArrow=diamondThin;startSize=14;startFill=1;endArrow=none;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15l1" parent="e15" style="edgeLabel;resizable=0;labelBackgroundColor=none;fontSize=12;align=right;verticalAlign=top;" value="1" vertex="1"><mxGeometry relative="1" x="-1" as="geometry" /></mxCell>
+        <mxCell id="e15l2" parent="e15" style="edgeLabel;resizable=0;labelBackgroundColor=none;fontSize=12;align=left;verticalAlign=bottom;" value="1..*" vertex="1"><mxGeometry relative="1" x="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

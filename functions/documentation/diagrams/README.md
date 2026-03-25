@@ -5,6 +5,287 @@ This document provides accurate documentation for **ALL 23 FIRESTORE COLLECTIONS
 ## Files
 - **`LD_SWD.drawio`** - Current logical data model (NoSQL with optional SQL-strict constraints notes)
 - **`SD_SWD.drawio`** - Current sequence diagram
+- **`CD_SWD.drawio`** - Class diagram for full product and recipe route flow (route -> controller -> service -> repository -> entity)
+
+## Class Diagram (CD_SWD)
+
+`CD_SWD.drawio` documents the application-layer class structure in a UML style.
+
+### Scope
+- Primary focus: full product and recipe module flow, from routes to entities.
+- Layered flow represented: **Route -> Controller -> Service -> Repository -> Entity**.
+- Middleware is intentionally omitted from this class view.
+
+### What It Shows
+- Concrete classes for product/recipe routes, controllers, services, and repositories.
+- Domain entities and their multiplicities (`Product` to `Recipe`, `Recipe` to `RecipeIngredient`).
+- Repository-to-entity persistence links.
+
+### Conventions
+- Controller names map to service names where possible (for example: `rawBatchController` -> `rawBatchService`).
+- Multiplicity labels follow UML cardinality notation (see table below).
+- The diagram is architecture-oriented; endpoint-level validation details remain in code.
+
+#### UML Cardinality Notation
+
+| Notation | Meaning | Description |
+| --- | --- | --- |
+| `1` | Exactly one | A single, required reference. |
+| `0..1` | Zero or one | An optional single-valued reference. |
+| `*` or `0..*` | Zero or many | An optional many-valued (unlimited) reference. |
+| `1..*` | One or many | A required many-valued reference; at least one instance. |
+| `n` | Exactly n | A specific number n (where n > 1). |
+| `0..n` | Zero to n | A range from zero up to and including n instances. |
+| `1..n` | One to n | A range from one up to and including n instances. |
+| `X..Y` | Range from X to Y | A specific range of instances. |
+
+### Maintenance Notes
+- When introducing a new controller, add a matching service class in code and reflect it in `CD_SWD.drawio`.
+- Keep diagram names aligned with real filenames in `functions/controllers/` and `functions/services/`.
+- Update this section when the class diagram scope expands beyond product/recipe.
+
+### CD Relationship Notes (Why + Implementation)
+
+The entries below document each relationship shown in `CD_SWD.drawio`, why it exists, and where it is implemented in code.
+
+#### CD-R1: `ProductRoutes` → `ProductController` (Association)
+```javascript
+// routes/productRoutes.js
+router.post('/create', authMiddleware, roleMiddleware([3]), strictLimiter, productController.createProduct);
+router.put('/one', authMiddleware, roleMiddleware([3]), strictLimiter, productController.updateProduct);
+```
+**Why**: The route layer maps HTTP endpoints to product controller handlers.
+**Cardinality**: `1..1 -> 1..1`.
+**Implemented in**: `functions/routes/productRoutes.js`.
+
+#### CD-R2: `RecipeRoutes` → `RecipeController` (Association)
+```javascript
+// routes/recipeRoutes.js
+router.post('/create', authMiddleware, roleMiddleware([3]), strictLimiter, recipeController.createRecipe);
+router.put('/one', authMiddleware, roleMiddleware([3]), strictLimiter, recipeController.updateRecipe);
+```
+**Why**: The route layer maps HTTP endpoints to recipe controller handlers.
+**Cardinality**: `1..1 -> 1..1`.
+**Implemented in**: `functions/routes/recipeRoutes.js`.
+
+#### CD-R3: `ProductController` → `ProductService` (Dependency)
+```javascript
+// controllers/productController.js
+const product = await productService.createProduct(payload, req.user.uid);
+const updated = await productService.updateProduct(productId, req.body);
+```
+**Why**: Controller handles request/response and delegates business/data orchestration to service.
+**Cardinality**: `1..1 -> 1..1`.
+**Implemented in**: `functions/controllers/productController.js` calling `functions/services/productService.js`.
+
+#### CD-R4: `RecipeController` → `RecipeService` (Dependency)
+```javascript
+// controllers/recipeController.js
+const result = await recipeService.createRecipe({ product_id, recipe_name, instructions, ingredients }, req.user.uid);
+const result = await recipeService.updateRecipe({ recipe_id, recipe_name, instructions, ingredients });
+```
+**Why**: Controller remains thin and delegates recipe domain logic to service.
+**Cardinality**: `1..1 -> 1..1`.
+**Implemented in**: `functions/controllers/recipeController.js` calling `functions/services/recipeService.js`.
+
+#### CD-R5: `ProductService` → `ProductRepository` (Association, 1..1)
+```javascript
+// services/productService.js
+const product = await productRepository.create({...});
+return productRepository.update(productId, updateData);
+```
+**Why**: Product service persists and reads product documents through repository abstraction.
+**Cardinality**: `1..1 -> 1..1`.
+**Implemented in**: `functions/services/productService.js` and `functions/repositories/productRepository.js`.
+
+#### CD-R6: `ProductService` → `RecipeRepository` (Association, 0..1)
+```javascript
+// services/productService.js
+if (recipe) {
+    const recipeDoc = await recipeRepository.create({...});
+}
+const recipe = await recipeRepository.findByProductId(productId);
+```
+**Why**: Product creation/retrieval optionally includes recipe linkage.
+**Cardinality**: `1..1 -> 0..1`.
+**Implemented in**: `functions/services/productService.js` and `functions/repositories/recipeRepository.js`.
+
+#### CD-R7: `ProductService` → `RecipeIngredientRepository` (Association, 0..*)
+```javascript
+// services/productService.js
+if (ingredients && ingredients.length > 0) {
+    await recipeIngredientRepository.create({...});
+}
+```
+**Why**: A product-created recipe can include zero or many ingredients.
+**Cardinality**: `1..1 -> 0..*`.
+**Implemented in**: `functions/services/productService.js` and `functions/repositories/recipeIngredientRepository.js`.
+
+#### CD-R8: `RecipeService` → `ProductRepository` (Association, 1..1)
+```javascript
+// services/recipeService.js
+const product = await productRepository.findById(product_id);
+```
+**Why**: Recipe creation validates that target product exists.
+**Cardinality**: `1..1 -> 1..1`.
+**Implemented in**: `functions/services/recipeService.js` and `functions/repositories/productRepository.js`.
+
+#### CD-R9: `RecipeService` → `RecipeRepository` (Association, 1..1)
+```javascript
+// services/recipeService.js
+const recipe = await recipeRepository.create({...});
+await recipeRepository.update(recipe_id, updateData);
+await recipeRepository.deleteRecipe(recipeId);
+```
+**Why**: Recipe service manages recipe lifecycle through repository.
+**Cardinality**: `1..1 -> 1..1`.
+**Implemented in**: `functions/services/recipeService.js` and `functions/repositories/recipeRepository.js`.
+
+#### CD-R10: `RecipeService` → `RecipeIngredientRepository` (Association, 0..*)
+```javascript
+// services/recipeService.js
+const existingIngredients = await recipeIngredientRepository.findByRecipeId(recipe_id);
+await recipeIngredientRepository.deleteIngredient(existing.ingredient_id);
+await recipeIngredientRepository.create({...});
+```
+**Why**: Recipe ingredients are managed as a child set of recipe records.
+**Cardinality**: `1..1 -> 0..*`.
+**Implemented in**: `functions/services/recipeService.js` and `functions/repositories/recipeIngredientRepository.js`.
+
+#### CD-R11: `ProductRepository` → `Product` Entity (Persistence Link)
+```javascript
+// repositories/productRepository.js
+await db.collection('products').add({...});
+await db.collection('products').doc(productId).update({...});
+```
+**Why**: Repository encapsulates CRUD on `products` collection.
+**Cardinality**: `1..1 -> 0..*` (one repository manages many entity records).
+**Implemented in**: `functions/repositories/productRepository.js`.
+
+#### CD-R12: `RecipeRepository` → `Recipe` Entity (Persistence Link)
+```javascript
+// repositories/recipeRepository.js
+await db.collection('recipes').add({...});
+await db.collection('recipes').doc(recipeId).update({...});
+```
+**Why**: Repository encapsulates CRUD on `recipes` collection.
+**Cardinality**: `1..1 -> 0..*` (one repository manages many entity records).
+**Implemented in**: `functions/repositories/recipeRepository.js`.
+
+#### CD-R13: `RecipeIngredientRepository` → `RecipeIngredient` Entity (Persistence Link)
+```javascript
+// repositories/recipeIngredientRepository.js
+await db.collection('recipe_ingredients').add({...});
+await db.collection('recipe_ingredients').doc(ingredientId).delete();
+```
+**Why**: Repository encapsulates CRUD on `recipe_ingredients` collection.
+**Cardinality**: `1..1 -> 0..*` (one repository manages many entity records).
+**Implemented in**: `functions/repositories/recipeIngredientRepository.js`.
+
+#### CD-R14: `Product` ◼→ `Recipe` (Composition, `1` to `0..1`)
+```javascript
+// services/recipeService.js
+const existingRecipe = await recipeRepository.findByProductId(product_id);
+if (existingRecipe) return { error: 'Recipe already exists for this product', ... };
+```
+**Why**: A product may have no recipe or exactly one recipe in this design.
+**Cardinality**: `1..1 -> 0..1`.
+**Implemented in**: `functions/services/recipeService.js` (enforced at service layer), with lookup in `functions/repositories/recipeRepository.js`.
+
+#### CD-R15: `Recipe` ◼→ `RecipeIngredient` (Composition, `1` to `1..*`)
+```javascript
+// services/recipeService.js
+const existingIngredients = await recipeIngredientRepository.findByRecipeId(recipe_id);
+for (const existing of existingIngredients) {
+    await recipeIngredientRepository.deleteIngredient(existing.ingredient_id);
+}
+for (const ingredient of ingredients) {
+    await recipeIngredientRepository.create({...});
+}
+```
+**Why**: Ingredients are owned by recipe context and updated as a set.
+**Cardinality**: `1..1 -> 1..*`.
+**Implemented in**: `functions/services/recipeService.js` and `functions/repositories/recipeIngredientRepository.js`.
+
+### Context Flow: Product -> Recipe -> RecipeIngredient
+
+Use this flow to understand how the three entities connect during normal operations.
+
+1. Product is created first.
+`ProductService` writes one `Product` record through `ProductRepository`.
+
+2. Recipe is attached to a product (optional).
+`RecipeService` checks product existence (`ProductRepository.findById`) and creates one `Recipe` tied by `product_id`.
+
+3. Recipe ingredients are attached to a recipe.
+`RecipeService` writes one or more `RecipeIngredient` records tied by `recipe_id`.
+
+4. Read flow follows parent -> child.
+Typical retrieval path is `Product` -> `Recipe` (`findByProductId`) -> `RecipeIngredient[]` (`findByRecipeId`).
+
+5. Update flow keeps composition integrity.
+When recipe composition changes, service logic replaces ingredient rows as a set for that recipe.
+
+#### Relationship View (Quick)
+- `Product` -> `Recipe`: `1..1 -> 0..1` (a product may have no recipe, or exactly one).
+- `Recipe` -> `RecipeIngredient`: `1..1 -> 1..*` (a recipe owns one or more ingredients in this design).
+- `Product` -> `RecipeIngredient`: indirect via `Recipe` (no direct FK in the model).
+
+#### Minimal Example (Conceptual)
+```text
+Product: P100 ("Chicken Soup")
+    -> Recipe: R200 (product_id = P100)
+             -> RecipeIngredient: RI301 (recipe_id = R200, material_id = M10)
+             -> RecipeIngredient: RI302 (recipe_id = R200, material_id = M11)
+```
+
+### Route Context Flow: Product and Recipe Modules
+
+This view explains the request path for the two route modules represented in `CD_SWD.drawio`.
+
+#### A) Product Create/Update Route Flow
+
+```text
+POST /products/create or PUT /products/one
+    -> ProductRoutes
+    -> ProductController
+    -> ProductService
+    -> ProductRepository (always)
+    -> RecipeRepository (optional, when recipe payload exists)
+    -> RecipeIngredientRepository (optional, when ingredients exist)
+    -> Entity writes: Product (+ optional Recipe + optional RecipeIngredient[])
+```
+
+Relationship mapping in CD:
+- `ProductRoutes -> ProductController` (CD-R1)
+- `ProductController -> ProductService` (CD-R3)
+- `ProductService -> ProductRepository` (CD-R5)
+- `ProductService -> RecipeRepository` (CD-R6)
+- `ProductService -> RecipeIngredientRepository` (CD-R7)
+
+#### B) Recipe Create/Update Route Flow
+
+```text
+POST /recipes/create or PUT /recipes/one
+    -> RecipeRoutes
+    -> RecipeController
+    -> RecipeService
+    -> ProductRepository (validate target product)
+    -> RecipeRepository (create/update recipe)
+    -> RecipeIngredientRepository (create/replace recipe ingredients)
+    -> Entity writes: Recipe + RecipeIngredient[]
+```
+
+Relationship mapping in CD:
+- `RecipeRoutes -> RecipeController` (CD-R2)
+- `RecipeController -> RecipeService` (CD-R4)
+- `RecipeService -> ProductRepository` (CD-R8)
+- `RecipeService -> RecipeRepository` (CD-R9)
+- `RecipeService -> RecipeIngredientRepository` (CD-R10)
+
+#### Why this matters
+- It shows that route/controller classes orchestrate direction, while entity ownership remains `Product -> Recipe -> RecipeIngredient`.
+- It explains why both product and recipe modules can touch recipe ingredient persistence, but with different business intent.
 
 ## How to Open
 - VS Code: `code --install-extension hediet.vscode-drawio`
@@ -185,7 +466,7 @@ const findByProductId = async (productId) => {
 
 #### R15: `recipes` → `recipe_ingredients` (One-to-Many)
 ```javascript
-// controllers/recipeController.js + services/recipeService.js
+// services/recipeService.js
 const createRecipe = async (recipeData) => {
     // Create recipe first
     const recipe = await recipeRepository.create({
@@ -208,6 +489,7 @@ const createRecipe = async (recipeData) => {
 };
 ```
 **Why**: Each recipe contains multiple ingredients (bill of materials).
+**Implemented in**: `functions/services/recipeService.js` (controller delegates).
 
 #### R16: `recipe_ingredients` → `raw_materials` (Many-to-One)
 ```javascript
@@ -597,23 +879,20 @@ const create = async (disputeData) => {
 
 #### R38: `order_disputes` → `items[]` (Embedded Array - NoSQL)
 ```javascript
-// controllers/disputeController.js
-const fileDispute = async (req, res) => {
-    const disputeData = {
-        order_id: req.body.order_id,
-        store_staff_id: req.user.store_staff_id,
-        items: req.body.items.map(item => ({
-            product_id: item.product_id,
-            product_name: item.product_name,
-            disputed_quantity: item.disputed_quantity,
-            issue_type: item.issue_type
-        })),
-        reason: req.body.reason
-    };
-    await disputeRepository.create(disputeData);
+// services/disputeService.js
+const fileDispute = async (orderId, items, reason, userId) => {
+    const storeStaff = await storeStaffRepository.findByUserId(userId);
+    return disputeRepository.create({
+        order_id: orderId,
+        store_staff_id: storeStaff.store_staff_id,
+        items,
+        reason,
+        status: 'PENDING'
+    });
 };
 ```
 **Why**: NoSQL optimization - disputed items embedded directly, no separate `dispute_items` table.
+**Implemented in**: `functions/services/disputeService.js` (controller delegates).
 
 ### 9. CREDIT SYSTEM (4 relationships)
 

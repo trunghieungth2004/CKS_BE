@@ -1,6 +1,4 @@
-const productRepository = require('../repositories/productRepository');
-const recipeRepository = require('../repositories/recipeRepository');
-const recipeIngredientRepository = require('../repositories/recipeIngredientRepository');
+const productService = require('../services/productService');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const createProduct = async (req, res) => {
@@ -15,35 +13,15 @@ const createProduct = async (req, res) => {
             return errorResponse(res, 400, 'Valid weight_per_unit (in kg) is required', 'VAL100');
         }
 
-        const product = await productRepository.create({
+        const product = await productService.createProduct({
             product_name,
             product_description,
-            price: parseFloat(price),
-            weight_per_unit: parseFloat(weight_per_unit),
-            shelf_life_days: shelf_life_days || 5,
-            created_by: req.user.uid
-        });
-
-        if (recipe) {
-            const recipeDoc = await recipeRepository.create({
-                product_id: product.product_id,
-                recipe_name: recipe.recipe_name || product_name,
-                instructions: recipe.instructions || '',
-                created_by: req.user.uid
-            });
-
-            if (ingredients && ingredients.length > 0) {
-                for (const ingredient of ingredients) {
-                    await recipeIngredientRepository.create({
-                        recipe_id: recipeDoc.recipe_id,
-                        material_id: ingredient.material_id,
-                        material_name: ingredient.material_name,
-                        quantity_per_unit: ingredient.quantity_per_unit,
-                        unit: ingredient.unit || 'kg'
-                    });
-                }
-            }
-        }
+            price,
+            weight_per_unit,
+            shelf_life_days,
+            recipe,
+            ingredients
+        }, req.user.uid);
 
         return successResponse(res, 201, 'Product created successfully', {
             product_id: product.product_id,
@@ -56,7 +34,7 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-        const products = await productRepository.findAll();
+        const products = await productService.getProducts();
         return successResponse(res, 200, 'Products retrieved successfully', products, 'PROD104');
     } catch (error) {
         return errorResponse(res, 500, error.message);
@@ -71,24 +49,13 @@ const getProductById = async (req, res) => {
             return errorResponse(res, 400, 'Product ID is required', 'VAL100');
         }
         
-        const product = await productRepository.findById(productId);
+        const product = await productService.getProductById(productId);
         
         if (!product) {
             return errorResponse(res, 404, 'Product not found', 'PROD103');
         }
 
-        const recipe = await recipeRepository.findByProductId(productId);
-        let ingredients = [];
-        
-        if (recipe) {
-            ingredients = await recipeIngredientRepository.findByRecipeId(recipe.recipe_id);
-        }
-
-        return successResponse(res, 200, 'Product retrieved successfully', {
-            ...product,
-            recipe,
-            ingredients
-        });
+        return successResponse(res, 200, 'Product retrieved successfully', product);
     } catch (error) {
         return errorResponse(res, 500, error.message);
     }
@@ -102,21 +69,11 @@ const updateProduct = async (req, res) => {
             return errorResponse(res, 400, 'Product ID is required', 'VAL100');
         }
 
-        const { product_name, product_description, price, shelf_life_days } = req.body;
+        const updated = await productService.updateProduct(productId, req.body);
 
-        const product = await productRepository.findById(productId);
-        
-        if (!product) {
+        if (!updated) {
             return errorResponse(res, 404, 'Product not found', 'PROD103');
         }
-
-        const updateData = {};
-        if (product_name) updateData.product_name = product_name;
-        if (product_description) updateData.product_description = product_description;
-        if (price) updateData.price = parseFloat(price);
-        if (shelf_life_days) updateData.shelf_life_days = shelf_life_days;
-
-        const updated = await productRepository.update(productId, updateData);
 
         return successResponse(res, 200, 'Product updated successfully', updated, 'PROD101');
     } catch (error) {
@@ -132,13 +89,11 @@ const deleteProduct = async (req, res) => {
             return errorResponse(res, 400, 'Product ID is required', 'VAL100');
         }
 
-        const product = await productRepository.findById(productId);
-        
-        if (!product) {
+        const deleted = await productService.deleteProduct(productId);
+
+        if (!deleted) {
             return errorResponse(res, 404, 'Product not found', 'PROD103');
         }
-
-        await productRepository.deleteProduct(productId);
 
         return successResponse(res, 200, 'Product deleted successfully', null, 'PROD102');
     } catch (error) {

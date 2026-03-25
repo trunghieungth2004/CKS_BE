@@ -1,9 +1,4 @@
 const cookedQCService = require('../services/cookedQCService');
-const storeCreditRepository = require('../repositories/storeCreditRepository');
-const riskPoolTransferRepository = require('../repositories/riskPoolTransferRepository');
-const storeStaffRepository = require('../repositories/storeStaffRepository');
-const orderRepository = require('../repositories/orderRepository');
-const cookedBatchRepository = require('../repositories/cookedBatchRepository');
 const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 const getPendingProductQC = async (req, res) => {
@@ -21,11 +16,6 @@ const performProductQC = async (req, res) => {
 
         if (!batch_id) {
             return errorResponse(res, 400, 'batch_id is required', 'VAL100');
-        }
-
-        const batchExists = await cookedBatchRepository.findById(batch_id);
-        if (!batchExists) {
-            return errorResponse(res, 404, 'Batch not found', 'QC103');
         }
 
         if (!['PASS', 'FAIL'].includes(qc_result)) {
@@ -54,17 +44,14 @@ const getStoreCredits = async (req, res) => {
             return errorResponse(res, 400, 'store_staff_id is required', 'VAL100');
         }
 
-        const storeStaffExists = await storeStaffRepository.findById(store_staff_id);
-        if (!storeStaffExists) {
-            return errorResponse(res, 404, 'Store staff not found', 'USER103');
+        const result = await cookedQCService.getStoreCredits(store_staff_id);
+        if (result?.error) {
+            return errorResponse(res, result.statusCode, result.error, result.statusId);
         }
 
-        const credits = await storeCreditRepository.findByStoreStaffId(store_staff_id);
-        const totalCredits = await storeCreditRepository.getTotalCredits(store_staff_id);
-
         return successResponse(res, 200, 'Store credits retrieved successfully', {
-            credits,
-            total_credits: totalCredits
+            credits: result.credits,
+            total_credits: result.total_credits
         });
     } catch (error) {
         return errorResponse(res, 500, error.message, 'SYS100');
@@ -75,27 +62,9 @@ const getRiskPoolTransfers = async (req, res) => {
     try {
         const { order_id, store_staff_id } = req.body;
 
-        if (order_id) {
-            const orderExists = await orderRepository.findById(order_id);
-            if (!orderExists) {
-                return errorResponse(res, 404, 'Order not found', 'DB101');
-            }
-        }
-
-        if (store_staff_id) {
-            const storeStaffExists = await storeStaffRepository.findById(store_staff_id);
-            if (!storeStaffExists) {
-                return errorResponse(res, 404, 'Store staff not found', 'USER103');
-            }
-        }
-
-        let transfers;
-        if (order_id) {
-            transfers = await riskPoolTransferRepository.findByOrderId(order_id);
-        } else if (store_staff_id) {
-            transfers = await riskPoolTransferRepository.findByStoreStaffId(store_staff_id);
-        } else {
-            transfers = await riskPoolTransferRepository.findAll();
+        const transfers = await cookedQCService.getRiskPoolTransfers({ order_id, store_staff_id });
+        if (transfers?.error) {
+            return errorResponse(res, transfers.statusCode, transfers.error, transfers.statusId);
         }
 
         return successResponse(res, 200, 'Risk pool transfers retrieved successfully', transfers);
@@ -114,11 +83,6 @@ const searchRiskPoolStores = async (req, res) => {
             return errorResponse(res, 400, 'batch_id is required', 'VAL100');
         }
 
-        const batchExists = await cookedBatchRepository.findById(batch_id);
-        if (!batchExists) {
-            return errorResponse(res, 404, 'Batch not found', 'QC103');
-        }
-
         const stores = await cookedQCService.searchRiskPoolStores(batch_id, exclude_store_staff_id);
 
         return successResponse(res, 200, 'Available stores retrieved successfully', stores);
@@ -135,18 +99,8 @@ const transferFromRiskPool = async (req, res) => {
             return errorResponse(res, 400, 'batch_id is required', 'VAL100');
         }
 
-        const batchExists = await cookedBatchRepository.findById(batch_id);
-        if (!batchExists) {
-            return errorResponse(res, 404, 'Batch not found', 'QC103');
-        }
-
         if (!from_store_staff_id) {
             return errorResponse(res, 400, 'from_store_staff_id is required', 'VAL100');
-        }
-
-        const storeStaffExists = await storeStaffRepository.findById(from_store_staff_id);
-        if (!storeStaffExists) {
-            return errorResponse(res, 404, 'Store staff not found', 'USER103');
         }
 
         const result = await cookedQCService.transferFromRiskPool(
